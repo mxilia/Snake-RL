@@ -43,10 +43,10 @@ def paint():
 
 def update():
     checkEvent()
-    if(not key_order.empty() and plr.move(key_order.front(), True)):
+    if(not key_order.empty() and plr.changeDir(key_order.front())):
         key_order.pop()
-    else: 
-        plr.move(plr.last_key, False)
+    plr.move(plr.last_key)
+    plr.grow(apple.collide(plr.rect[0].x, plr.rect[0].y))
     apple.generate()
     return
 
