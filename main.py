@@ -24,15 +24,20 @@ def checkEvent():
             global run 
             run = False
         elif e.type == pygame.KEYDOWN:
-            if(e.key == pygame.K_w and e.key != pygame_key[plr.last_key]):
+            if(e.key == pygame.K_w and e.key != pygame_key[plr.rect[0][0]]):
                 key_order.push(0)
-            if(e.key == pygame.K_a and e.key != pygame_key[plr.last_key]):
+            if(e.key == pygame.K_a and e.key != pygame_key[plr.rect[0][0]]):
                 key_order.push(1)
-            if(e.key == pygame.K_s and e.key != pygame_key[plr.last_key]):
+            if(e.key == pygame.K_s and e.key != pygame_key[plr.rect[0][0]]):
                 key_order.push(2)
-            if(e.key == pygame.K_d and e.key != pygame_key[plr.last_key]):
+            if(e.key == pygame.K_d and e.key != pygame_key[plr.rect[0][0]]):
                 key_order.push(3)
     return
+
+def checkStatus():
+    global run
+    if(plr.alive == False):
+        run = False
 
 def paint():
     screen.fill((0, 0, 0))
@@ -45,9 +50,10 @@ def update():
     checkEvent()
     if(not key_order.empty() and plr.changeDir(key_order.front())):
         key_order.pop()
-    plr.move(plr.last_key)
-    plr.grow(apple.collide(plr.rect[0].x, plr.rect[0].y))
+    plr.move()
+    plr.grow(apple.collide(plr.rect[0][1].x, plr.rect[0][1].y))
     apple.generate()
+    checkStatus()
     return
 
 if __name__ == "__main__":
