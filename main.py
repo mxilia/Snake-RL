@@ -8,13 +8,10 @@ pygame.init()
 SCR_WIDTH = 800
 SCR_HEIGHT = 600
 run = True
-
 screen = pygame.display.set_mode((SCR_WIDTH, SCR_HEIGHT))
 clock = pygame.time.Clock()
 
-pygame_key = [pygame.K_w, pygame.K_a, pygame.K_s, pygame.K_d]
 key_order = Queue()
-
 plr = Player(SCR_WIDTH, SCR_HEIGHT)
 apple = Apple(SCR_WIDTH, SCR_HEIGHT)
 
@@ -24,13 +21,13 @@ def checkEvent():
             global run 
             run = False
         elif e.type == pygame.KEYDOWN:
-            if(e.key == pygame.K_w and e.key != pygame_key[plr.rect[0][0]]):
+            if(e.key == pygame.K_w and plr.rect[0][0]%2 != 0):
                 key_order.push(0)
-            if(e.key == pygame.K_a and e.key != pygame_key[plr.rect[0][0]]):
+            if(e.key == pygame.K_a and plr.rect[0][0]%2 != 1):
                 key_order.push(1)
-            if(e.key == pygame.K_s and e.key != pygame_key[plr.rect[0][0]]):
+            if(e.key == pygame.K_s and plr.rect[0][0]%2 != 0):
                 key_order.push(2)
-            if(e.key == pygame.K_d and e.key != pygame_key[plr.rect[0][0]]):
+            if(e.key == pygame.K_d and plr.rect[0][0]%2 != 1):
                 key_order.push(3)
     return
 
