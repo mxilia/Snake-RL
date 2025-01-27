@@ -44,13 +44,13 @@ def paint():
     return
 
 def update():
-    checkEvent()
     if(not key_order.empty() and plr.changeDir(key_order.front())):
         key_order.pop()
     plr.move()
     plr.grow(apple.collide(plr.rect[0][1].x, plr.rect[0][1].y))
-    apple.generate()
+    apple.generate(plr.rect)
     checkStatus()
+    checkEvent()
     return
 
 if __name__ == "__main__":

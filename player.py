@@ -39,12 +39,11 @@ class Player:
         if(self.rect[0][1].x+dx<0 or self.rect[0][1].x+self.width+dx>self.SCR_WIDTH or self.rect[0][1].y+dy<0 or self.rect[0][1].y+self.height+dy>self.SCR_HEIGHT):
             self.alive = False
             return
-        px = self.rect[0][1].x+dx-((self.rect[0][1].x+dx)%self.width)
-        py = self.rect[0][1].y+dy-((self.rect[0][1].y+dy)%self.height)
+        px = self.rect[0][1].x+dx+self.width/2-((self.rect[0][1].x+dx+self.width/2)%self.width)
+        py = self.rect[0][1].y+dy+self.height/2-((self.rect[0][1].y+dy+self.height/2)%self.height)
         for i in range(1, self.size, 1):
-            x = self.rect[i][1].x-(self.rect[i][1].x%self.width)
-            y = self.rect[i][1].y-(self.rect[i][1].y%self.height)
-            print(str(px) + " " + str(py) + " | " + str(x) + " " + str(y))
+            x = self.rect[i][1].x+self.width/2-((self.rect[i][1].x+self.width/2)%self.width)
+            y = self.rect[i][1].y+self.height/2-((self.rect[i][1].y+self.height/2)%self.height)
             if(px == x and py == y):
                 self.alive = False
                 return
