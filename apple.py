@@ -21,6 +21,9 @@ class Apple:
     
     def getPixelY(self):
         return int(self.rect.y/self.height)
+    
+    def getPixelTuple(self):
+        return (self.getPixelX(), self.getPixelY())
 
     def generate(self, occupied):
         if(self.onScreen): return

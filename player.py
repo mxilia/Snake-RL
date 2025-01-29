@@ -30,6 +30,11 @@ class Player:
         for i in range(self.size):
             list.append((self.getPixelX(i), self.getPixelY(i)))
         return list
+    
+    def completeMovement(self):
+        if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
+            return False
+        return True
 
     def collideBody(self, pixelX, pixelY):
         list = self.getBodyPixel()

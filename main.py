@@ -25,44 +25,33 @@ plr = Player(SCR_WIDTH, SCR_HEIGHT)
 apple = Apple(SCR_WIDTH, SCR_HEIGHT)
 
 pixel_grid = []
+prev_body = []
+prev_apple = ()
 
 def checkEvent():
-    if(user == True):
-        for e in pygame.event.get():
-            if(e.type == pygame.QUIT):
-                global run 
-                run = False
-            elif(e.type == pygame.KEYDOWN):
-                current_key = -1
-                if(key_order.empty): current_key = plr.rect[0][0]
-                else: current_key = key_order.rear()
-                if(e.key == pygame.K_w and current_key%2 != 0):
-                    key_order.push(0)
-                if(e.key == pygame.K_a and current_key%2 != 1):
-                    key_order.push(1)
-                if(e.key == pygame.K_s and current_key%2 != 0):
-                    key_order.push(2)
-                if(e.key == pygame.K_d and current_key%2 != 1):
-                    key_order.push(3)
-    else:
-        current_key = -1
-        if(key_order.empty): current_key = plr.rect[0][0]
-        else: current_key = key_order.rear()
-        if(bot.decision == 0 and current_key%2 != 0):
-            key_order.push(0)
-        if(bot.decision == 1 and current_key%2 != 1):
-            key_order.push(1)
-        if(bot.decision == 2 and current_key%2 != 0):
-            key_order.push(2)
-        if(bot.decision == 3 and current_key%2 != 1):
-            key_order.push(3)
-        bot.move -= 1
+    for e in pygame.event.get():
+        if(e.type == pygame.QUIT):
+            global run 
+            run = False
+        elif(e.type == pygame.KEYDOWN):
+            current_key = -1
+            if(key_order.empty): current_key = plr.rect[0][0]
+            else: current_key = key_order.rear()
+            if(e.key == pygame.K_w and current_key%2 != 0):
+                key_order.push(0)
+            if(e.key == pygame.K_a and current_key%2 != 1):
+                key_order.push(1)
+            if(e.key == pygame.K_s and current_key%2 != 0):
+                key_order.push(2)
+            if(e.key == pygame.K_d and current_key%2 != 1):
+                key_order.push(3)
     return
 
 def checkStatus():
     global run
     if(plr.alive == False):
         run = False
+    return
 
 def paint():
     screen.fill((0, 0, 0))
@@ -81,16 +70,39 @@ def update():
     checkStatus()
     return
 
-def update_pixel_grid():
+def user_environment():
+    while(user == True and run):
+        update()
+        paint()
+        clock.tick(60)
+    return
+
+def setup_pixel_grid():
     pixel_grid.clear()
     for i in range(SCR_HEIGHT_PIXEL):
         row = []
         for j in range(SCR_WIDTH_PIXEL):
             row.append(0.0)
         pixel_grid.append(row)
-    pixel_grid[apple.getPixelY()][apple.getPixelX()] = 1.0
-    for e in plr.getBodyPixel():
-        pixel_grid[e[1]][e[0]] = 1.0
+    update_pixel_grid()
+    global prev_body, prev_apple
+    prev_body = plr.getBodyPixel()
+    prev_apple = apple.getPixelTuple()
+    return
+
+def update_pixel_grid():
+    global prev_body, prev_apple
+    current_body = plr.getBodyPixel()
+    current_apple = apple.getPixelTuple()
+    if(current_body != prev_body):
+        for e in prev_body:
+            pixel_grid[e[1]][e[0]] = 0.0
+        for e in current_body:
+            pixel_grid[e[1]][e[0]] = 1.0
+        prev_body = current_body
+    if(current_apple != prev_apple):
+        pixel_grid[current_apple[1]][current_apple[0]] = 1.0
+        prev_apple = current_apple
     return
 
 def criticize_bot():
@@ -108,15 +120,20 @@ def criticize_bot():
         list[3] = 1.0
     return np.array(list).reshape(1, len(list))
 
+def bot_environment():
+    while(run):
+        if(plr.completeMovement()):
+            bot.predict(np.array(pixel_grid).reshape(1, bot.input_node), ())
+        update()
+        paint()
+        update_pixel_grid()
+    return
+
 def bot_train():
     global run
+    setup_pixel_grid()
     for i in range(50):
-        while(run):
-            bot.predict(np.array(pixel_grid).reshape(1, bot.input_node), criticize_bot())
-            update()
-            paint()
-            update_pixel_grid()
-            clock.tick(60)
+        bot_environment()
         bot.back_prop()
         bot.reset()
         plr.reset()
@@ -125,11 +142,8 @@ def bot_train():
 
 if __name__ == "__main__":
     user = False
-    while(user == True and run):
-        update()
-        paint()
-        clock.tick(60)
     if(user == False):
-        update_pixel_grid()
         bot_train()
+    else:
+        user_environment()
     pygame.quit() 
