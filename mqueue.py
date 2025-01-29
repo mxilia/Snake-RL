@@ -25,3 +25,9 @@ class Queue:
         x = self.dq.popleft()
         self.dq.appendleft(x)
         return x
+    
+    def rear(self):
+        if(self.sz==0): return -1
+        x = self.dq.pop()
+        self.dq.append(x)
+        return x
