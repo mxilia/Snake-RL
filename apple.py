@@ -8,7 +8,6 @@ class Apple:
     onScreen = False
     rect = pygame.Rect((500, 500, width, height))
     ava_pos = {}
-    respawn = True
 
     def __init__(self, SCR_WIDTH, SCR_HEIGHT):
         self.SCR_WIDTH = SCR_WIDTH
@@ -24,6 +23,11 @@ class Apple:
     
     def getPixelTuple(self):
         return (self.getPixelX(), self.getPixelY())
+    
+    def copyApple(self, onScreen, rect):
+        if(onScreen == False): return
+        self.rect = rect
+        return
 
     def generate(self, occupied):
         if(self.onScreen): return
@@ -37,7 +41,6 @@ class Apple:
             x = random.randint(0, self.boundPixelX-1)*self.width
             y = random.randint(0, self.boundPixelY-1)*self.height
         self.rect = pygame.Rect((x, y, self.width, self.height))
-        self.respawn = True
 
     def collide(self, x, y):
         if(self.rect.x == x and self.rect.y == y):

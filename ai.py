@@ -3,6 +3,8 @@ import pygame
 
 class Neural_Net:
     # Structure: input (grid) -> 16 -> 16 -> 16 -> output (wasd)
+    episode = 500
+
     alpha = 0.05
     exploration_rate = 0.95
     exploration_decay = 0.05
@@ -12,7 +14,7 @@ class Neural_Net:
     output_node = 4
     
     decision = 0
-    action = []
+    record = []
 
     key_W = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_w)
     key_A = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)
@@ -63,19 +65,19 @@ class Neural_Net:
     def loss_func(self):
 
         return
-    ch = True
-    def predict(self, input, sol):
+    
+    def pick_action(self, input):
         policy = self.forward(input)
-        self.action.append((policy, sol))
-        if(self.ch):
-            print(policy)
-            self.ch = False
         mx = -1.0
         for i in range(self.output_node):
             if(policy[0][i]>mx):
                 mx = policy[0][i]
                 self.decision = i
         pygame.event.post(self.keys[self.decision])
+        return
+    
+    def record_action(self, current_state, next_state):
+        self.record.add(current_state, next_state)
         return
 
     

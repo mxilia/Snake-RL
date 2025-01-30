@@ -12,6 +12,7 @@ class Player:
     default_key = 3
     last_dir = default_key
     chance = 1
+    collide = True
 
     def __init__(self, SCR_WIDTH, SCR_HEIGHT):
         self.SCR_WIDTH = SCR_WIDTH
@@ -24,12 +25,13 @@ class Player:
     
     def getPixelY(self, index):
         return int(self.rect[index][1].y/self.height)
-
-    def getBodyPixel(self):
-        list = []
-        for i in range(self.size):
-            list.append((self.getPixelX(i), self.getPixelY(i)))
-        return list
+    
+    def copyPlayer(self, rect, size, last_dir, chance):
+        self.rect = rect
+        self.size = size
+        self.last_dir = last_dir
+        self.chance = chance
+        return
     
     def completeMovement(self):
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
@@ -37,7 +39,8 @@ class Player:
         return True
 
     def collideBody(self, pixelX, pixelY):
-        list = self.getBodyPixel()
+        if(self.collide == False): return False
+        list = self.getBodyPixel(-1)
         for e in list:
             if(e[0]==self.getPixelX(0)+pixelX and e[1]==self.getPixelY(0)+pixelY):
                 return True
@@ -61,22 +64,24 @@ class Player:
         dx = self.dir[self.rect[0][0]][0]*self.speed
         dy = self.dir[self.rect[0][0]][1]*self.speed
         if(self.rect[0][1].x+dx<0 or self.rect[0][1].x+self.width+dx>self.SCR_WIDTH or self.rect[0][1].y+dy<0 or self.rect[0][1].y+self.height+dy>self.SCR_HEIGHT):
-            if(self.chance):
-                self.chance = False
-                return
-            self.alive = False
-            return
-        px = self.rect[0][1].x+dx+self.width/2-((self.rect[0][1].x+dx+self.width/2)%self.width)
-        py = self.rect[0][1].y+dy+self.height/2-((self.rect[0][1].y+dy+self.height/2)%self.height)
-        for i in range(1, self.size, 1):
-            x = self.rect[i][1].x+self.width/2-((self.rect[i][1].x+self.width/2)%self.width)
-            y = self.rect[i][1].y+self.height/2-((self.rect[i][1].y+self.height/2)%self.height)
-            if(px == x and py == y):
+            if(self.collide == True):
                 if(self.chance):
                     self.chance = False
                     return
                 self.alive = False
-                return
+            return
+        if(self.collide == True):
+            px = self.rect[0][1].x+dx+self.width/2-((self.rect[0][1].x+dx+self.width/2)%self.width)
+            py = self.rect[0][1].y+dy+self.height/2-((self.rect[0][1].y+dy+self.height/2)%self.height)
+            for i in range(1, self.size, 1):
+                x = self.rect[i][1].x+self.width/2-((self.rect[i][1].x+self.width/2)%self.width)
+                y = self.rect[i][1].y+self.height/2-((self.rect[i][1].y+self.height/2)%self.height)
+                if(px == x and py == y):
+                    if(self.chance):
+                        self.chance = False
+                        return
+                    self.alive = False
+                    return
         self.chance = True
         for rect in self.rect:
             dx = self.dir[rect[0]][0]*self.speed
