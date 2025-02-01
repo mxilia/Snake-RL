@@ -32,12 +32,13 @@ class Environment:
         self.setup_state()
         return
     
-    def getNextState(self, dir):
-        next_state = self.new_state()
-        next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
-        next_plr.copyPlayer(self.plr.rect, self.plr.size, self.plr.last_dir, self.plr.chance)
-        next_apple = Apple(self.SCR_WIDTH, self.SCR_HEIGHT)
-        next_apple.copyApple(self.apple.onScreen, self.apple.rect)
+    def getNextState(self):
+        for i in range(len(self.plr.dir)):
+            next_state = self.new_state()
+            next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
+            next_plr.copyPlayer(self.plr.rect, self.plr.size, self.plr.last_dir, self.plr.chance)
+            next_apple = Apple(self.SCR_WIDTH, self.SCR_HEIGHT)
+            next_apple.copyApple(self.apple.onScreen, self.apple.rect)
         return
 
     def getState(self):
@@ -73,7 +74,7 @@ class Environment:
         self.apple.draw(self.screen)
     
     def update_state(self):
-        self.current_body = self.plr.getBodyPixel(-1)
+        self.current_body = self.plr.getBodyPixel()
         self.current_apple = self.apple.getPixelTuple()
         if(self.current_body != self.prev_body):
             for e in self.prev_body:
@@ -90,7 +91,7 @@ class Environment:
         self.state.clear()
         self.state = self.new_state()
         self.update_state()
-        self.prev_body = self.plr.getBodyPixel(-1)
+        self.prev_body = self.plr.getBodyPixel()
         self.prev_apple = self.apple.getPixelTuple()
         return
     

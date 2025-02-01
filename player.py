@@ -33,6 +33,12 @@ class Player:
         self.chance = chance
         return
     
+    def getBodyPixel(self):
+        list = []
+        for i in range(self.size):
+            list.append((self.getPixelX(i), self.getPixelY(i)))
+        return list
+    
     def completeMovement(self):
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
             return False
@@ -40,7 +46,7 @@ class Player:
 
     def collideBody(self, pixelX, pixelY):
         if(self.collide == False): return False
-        list = self.getBodyPixel(-1)
+        list = self.getBodyPixel()
         for e in list:
             if(e[0]==self.getPixelX(0)+pixelX and e[1]==self.getPixelY(0)+pixelY):
                 return True
@@ -53,6 +59,10 @@ class Player:
         self.speed = 5
         self.rect.clear()
         self.rect.append([self.default_key, pygame.Rect((0, 0, self.width, self.height))])
+
+    def dead(self):
+
+        return
 
     def changeDir(self, key):
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):

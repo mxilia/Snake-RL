@@ -3,7 +3,7 @@ import pygame
 
 class Neural_Net:
     # Structure: input (grid) -> 16 -> 16 -> 16 -> output (wasd)
-    episode = 500
+    episode = 50
 
     alpha = 0.05
     exploration_rate = 0.95
@@ -35,7 +35,7 @@ class Neural_Net:
     def save_version():
         return
     def reset(self):
-        self.action.clear()
+        self.record.clear()
         return
 
     def gen_weight(self, l1, l2):
@@ -77,7 +77,7 @@ class Neural_Net:
         return
     
     def record_action(self, current_state, next_state):
-        self.record.add(current_state, next_state)
+        self.record.append(current_state, next_state)
         return
 
     
