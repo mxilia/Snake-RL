@@ -5,15 +5,15 @@ class Apple:
     width = 20
     height = 20
     color = (255, 0, 0)
-    onScreen = False
-    rect = pygame.Rect((500, 500, width, height))
-    ava_pos = {}
-
+    
     def __init__(self, SCR_WIDTH, SCR_HEIGHT):
         self.SCR_WIDTH = SCR_WIDTH
         self.SCR_HEIGHT = SCR_HEIGHT
         self.boundPixelX = int(self.SCR_WIDTH/self.width)
         self.boundPixelY = int(self.SCR_HEIGHT/self.height)
+        self.onScreen = False
+        self.rect = pygame.Rect((500, 500, self.width, self.height))
+        self.ava_pos = {}
 
     def getPixelX(self):
         return int(self.rect.x/self.width)
@@ -24,9 +24,9 @@ class Apple:
     def getPixelTuple(self):
         return (self.getPixelX(), self.getPixelY())
     
-    def copyApple(self, onScreen, rect):
-        if(onScreen == False): return
-        self.rect = rect
+    def copyApple(self, apple):
+        if(apple.onScreen == False): return
+        self.rect = pygame.Rect((apple.rect.x, apple.rect.y, apple.rect.width, apple.rect.height))
         return
 
     def generate(self, occupied):

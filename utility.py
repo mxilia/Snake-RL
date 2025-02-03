@@ -31,3 +31,9 @@ class Queue:
         x = self.dq.pop()
         self.dq.append(x)
         return x
+    
+    def copyQueue(self, queue):
+        while(not queue.empty()):
+            self.push(queue.front())
+            queue.pop()
+        return

@@ -6,24 +6,19 @@ from utility import Queue
 
 class Environment:
     pixel_size = 20
-
     SCR_WIDTH = 800
     SCR_HEIGHT = 600
     SCR_WIDTH_PIXEL = int(SCR_WIDTH/pixel_size)
     SCR_HEIGHT_PIXEL = int(SCR_HEIGHT/pixel_size)
-
-    screen = pygame.display.set_mode((SCR_WIDTH, SCR_HEIGHT))
-
-    key_order = Queue()
-    plr = Player(SCR_WIDTH, SCR_HEIGHT)
-    apple = Apple(SCR_WIDTH, SCR_HEIGHT)
-
-    state = []
-    next_state = []
-    prev_body = []
-    prev_apple = ()
-
+    
     def __init__(self):
+        self.screen = pygame.display.set_mode((self.SCR_WIDTH, self.SCR_HEIGHT))
+        self.key_order = Queue()
+        self.plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
+        self.apple = Apple(self.SCR_WIDTH, self.SCR_HEIGHT)
+        self.state = []
+        self.prev_body = []
+        self.prev_apple = ()
         self.setup_state()
         return
 
@@ -33,21 +28,36 @@ class Environment:
         return
     
     def getNextState(self):
+        list = []
         for i in range(len(self.plr.dir)):
             next_state = self.new_state()
             next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
-            next_plr.copyPlayer(self.plr.rect, self.plr.size, self.plr.last_dir, self.plr.chance)
-            next_apple = Apple(self.SCR_WIDTH, self.SCR_HEIGHT)
-            next_apple.copyApple(self.apple.onScreen, self.apple.rect)
-        return
+            next_plr.copyPlayer(self.plr)
+            next_apple = Apple(self.SCR_WIDTH_PIXEL, self.SCR_HEIGHT)
+            next_apple.copyApple(self.apple)
+            next_plr.changeDir(i)
+            next_plr.move()
+            while(not next_plr.completeMovement()): next_plr.move()
+            next_plr.grow(next_apple.collide(next_plr.getX(0), next_plr.getY(0)))
+            next_body = next_plr.getBodyPixel()
+            for e in next_body:
+                next_state[e[1]][e[0]] = 1.0
+            list.append(np.array(next_state).reshape(1, self.SCR_WIDTH_PIXEL*self.SCR_HEIGHT_PIXEL))
+        return list
 
     def getState(self):
-        return self.state
+        list = []
+        for i in range(self.SCR_HEIGHT_PIXEL):
+            row = []
+            for j in range(self.SCR_WIDTH_PIXEL):
+                row.append(self.state[i][j])
+            list.append(row)
+        return list
 
     def checkEvent(self, e):
         if(e.type != pygame.KEYDOWN): return
         current_key = -1
-        if(self.key_order.empty): current_key = self.plr.rect[0][0]
+        if(self.key_order.empty()): current_key = self.plr.rect[0][0]
         else: current_key = self.key_order.rear()
         if(e.key == pygame.K_w and current_key%2 != 0):
             self.key_order.push(0)
@@ -60,10 +70,11 @@ class Environment:
         return
     
     def update(self):
+        if(self.plr.alive == False): return
         if(not self.key_order.empty() and self.plr.changeDir(self.key_order.front())):
             self.key_order.pop()
+        self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
         self.plr.move()
-        self.plr.grow(self.apple.collide(self.plr.rect[0][1].x, self.plr.rect[0][1].y))
         self.apple.generate(self.plr.rect)
         self.update_state()
         return

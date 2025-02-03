@@ -3,34 +3,42 @@ import pygame
 class Player:
     width = 20
     height = 20
-    speed = 5
+    speed = 4
     color = (0, 255, 0)
-    alive = True
     dir = [(0, -1), (-1, 0), (0, 1), (1, 0)]
-    rect = []
-    size = 1
-    default_key = 3
-    last_dir = default_key
-    chance = 1
-    collide = True
 
     def __init__(self, SCR_WIDTH, SCR_HEIGHT):
         self.SCR_WIDTH = SCR_WIDTH
         self.SCR_HEIGHT = SCR_HEIGHT
+        self.alive = True
+        self.rect = []
+        self.size = 1
+        self.default_key = 3
+        self.collide = True
+        self.move_cnt = 0
         self.rect.append([self.default_key, pygame.Rect((0, 0, self.width, self.height))])
-        self.tail = self.rect[0]
+
+    def getX(self, index):
+        if(index>=self.size or index<0): return None
+        return self.rect[index][1].x
+    
+    def getY(self, index):
+        if(index>=self.size or index<0): return None
+        return self.rect[index][1].y
 
     def getPixelX(self, index):
+        if(index>=self.size or index<0): return None
         return int(self.rect[index][1].x/self.width)
     
     def getPixelY(self, index):
+        if(index>=self.size or index<0): return None
         return int(self.rect[index][1].y/self.height)
     
-    def copyPlayer(self, rect, size, last_dir, chance):
-        self.rect = rect
-        self.size = size
-        self.last_dir = last_dir
-        self.chance = chance
+    def copyPlayer(self, plr):
+        self.rect.clear()
+        for i in range(len(plr.rect)):
+            self.rect.append([plr.rect[i][0].copy(), plr.rect[i][1].copy()])
+        self.size = plr.size
         return
     
     def getBodyPixel(self):
@@ -40,11 +48,13 @@ class Player:
         return list
     
     def completeMovement(self):
+        if(self.alive == False): return True
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
             return False
         return True
 
     def collideBody(self, pixelX, pixelY):
+        if(self.alive == False): return
         if(self.collide == False): return False
         list = self.getBodyPixel()
         for e in list:
@@ -53,46 +63,42 @@ class Player:
         return False
     
     def reset(self):
-        self.tail = self.rect[0]
         self.alive = True
         self.size = 1
-        self.speed = 5
+        self.move_cnt = 0
         self.rect.clear()
         self.rect.append([self.default_key, pygame.Rect((0, 0, self.width, self.height))])
 
     def dead(self):
-
+        self.alive = False
+        self.size = 0
+        self.rect.clear()
         return
 
     def changeDir(self, key):
+        if(self.alive == False): return
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
             return False
         self.rect[0][0] = key
         return True
 
     def move(self):
+        if(self.alive == False): return
         dx = self.dir[self.rect[0][0]][0]*self.speed
         dy = self.dir[self.rect[0][0]][1]*self.speed
-        if(self.rect[0][1].x+dx<0 or self.rect[0][1].x+self.width+dx>self.SCR_WIDTH or self.rect[0][1].y+dy<0 or self.rect[0][1].y+self.height+dy>self.SCR_HEIGHT):
-            if(self.collide == True):
-                if(self.chance):
-                    self.chance = False
-                    return
-                self.alive = False
-            return
         if(self.collide == True):
+            if(self.rect[0][1].x+dx<0 or self.rect[0][1].x+self.width+dx>self.SCR_WIDTH or self.rect[0][1].y+dy<0 or self.rect[0][1].y+self.height+dy>self.SCR_HEIGHT):
+                self.dead()
+                return
             px = self.rect[0][1].x+dx+self.width/2-((self.rect[0][1].x+dx+self.width/2)%self.width)
             py = self.rect[0][1].y+dy+self.height/2-((self.rect[0][1].y+dy+self.height/2)%self.height)
             for i in range(1, self.size, 1):
                 x = self.rect[i][1].x+self.width/2-((self.rect[i][1].x+self.width/2)%self.width)
                 y = self.rect[i][1].y+self.height/2-((self.rect[i][1].y+self.height/2)%self.height)
                 if(px == x and py == y):
-                    if(self.chance):
-                        self.chance = False
-                        return
-                    self.alive = False
+                    self.dead()
                     return
-        self.chance = True
+        if(self.completeMovement()): self.move_cnt+=1
         for rect in self.rect:
             dx = self.dir[rect[0]][0]*self.speed
             dy = self.dir[rect[0]][1]*self.speed
@@ -104,6 +110,7 @@ class Player:
         return
     
     def grow(self, eaten):
+        if(self.alive == False): return False
         if(not eaten): return False
         self.rect.append([self.last_dir, pygame.Rect((self.rect[self.size-1][1].x-self.dir[self.last_dir][0]*self.width, self.rect[self.size-1][1].y-self.dir[self.last_dir][1]*self.height, self.width, self.height))])
         self.size+=1

@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from environment import Environment
-from ai import Neural_Net
+from agent import Neural_Net
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -9,7 +9,7 @@ clock = pygame.time.Clock()
 user = False
 run = True
 env = Environment()
-bot = Neural_Net(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL)
+agent = Neural_Net(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL)
 
 def checkEvent():
     for e in pygame.event.get():
@@ -32,19 +32,20 @@ def update():
 
 def play():
     while(env.plr.alive and run):
-        if(user == False):
-            bot.pick_action(np.array(env.getState()).reshape(1, bot.input_node))
+        if(user == False and env.plr.completeMovement()):
+            agent.pick_action(env.getNextState())
         update()
         paint()
         clock.tick(120)
     return
 
 def train():
-    for i in range(bot.episode):
-        play()
-        bot.reset()
+    for i in range(agent.episode):
+        agent.reset()
         env.reset()
-        bot.back_prop()
+        agent.setCurrentState(env.getState())
+        play()
+        agent.back_prop()
     return
 
 if __name__ == "__main__":
