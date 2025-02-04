@@ -37,7 +37,7 @@ class Player:
     def copyPlayer(self, plr):
         self.rect.clear()
         for i in range(len(plr.rect)):
-            self.rect.append([plr.rect[i][0].copy(), plr.rect[i][1].copy()])
+            self.rect.append([plr.rect[i][0], plr.rect[i][1].copy()])
         self.size = plr.size
         return
     
