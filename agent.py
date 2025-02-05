@@ -92,7 +92,7 @@ class Neural_Net:
         sample = random.sample(self.record, min(self.batch, len(self.record)))
         loss = self.loss_func(sample)
         for e in sample:
-            hidden = e[3]
+            d1 = 2*(loss)
             return
         return
     
@@ -125,5 +125,3 @@ class Neural_Net:
     def record_action(self, current_state, reward, next_state, hidden):
         self.record.append((current_state, reward, next_state, hidden))
         return
-
-    
