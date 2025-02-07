@@ -37,7 +37,7 @@ def play():
             agent.pick_action(env.getNextState(), env.plr.size)
         update()
         paint()
-        clock.tick(120)
+      #  clock.tick(120)
     return
 
 def train_agent():
@@ -51,7 +51,8 @@ def train_agent():
 
 if __name__ == "__main__":
     if(user == False): 
-        if(train == True): train_agent()
+        if(train == True): 
+            train_agent()
         else: play()
     else: play()
     pygame.quit()

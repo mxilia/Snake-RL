@@ -8,7 +8,7 @@ class Neural_Net:
     batch = 32
 
     alpha = 0.05
-    discount = 0.90
+    discount = 0.6
     default_move = 100
     
     exploration_decay = 0.05
@@ -36,7 +36,16 @@ class Neural_Net:
         self.w2 = self.gen_weight(self.hidden_node, self.hidden_node)
         self.w3 = self.gen_weight(self.hidden_node, self.hidden_node)
         self.w4 = self.gen_weight(self.hidden_node, self.output_node)
+        self.z1 = self.a1 = self.z2 = self.a2 = self.z3 = self.a3 = self.z4 = None
 
+    def save_model(self):
+
+        return
+    
+    def load_model(self, index):
+
+        return
+    
     def gen_weight(self, l1, l2):
         list = []
         for i in range(l1*l2):
@@ -48,7 +57,7 @@ class Neural_Net:
         self.done = False
         self.move_left = self.default_move
         return
-    
+
     def setCurrentState(self, current_state):
         self.current_state = current_state
         return
@@ -74,8 +83,8 @@ class Neural_Net:
     def relu(self, x):
         return x*(x>0)
 
-    def diff_relu(self, x):
-        return x>0
+    def relu_derivative(self, x):
+        return int(x>0)
     
     def forward(self, input):
         self.z1 = np.dot(input, self.w1)
@@ -89,39 +98,60 @@ class Neural_Net:
     
     def back_prop(self):
         if(len(self.record) == 0): return
+        loss = self.loss_func(self.record)
         sample = random.sample(self.record, min(self.batch, len(self.record)))
-        loss = self.loss_func(sample)
+        sample_len = len(sample)
+        print("Loss: ", loss)
+        dw1 = np.zeros_like(self.w1)
+        dw2 = np.zeros_like(self.w2)
+        dw3 = np.zeros_like(self.w3)
+        dw4 = np.zeros_like(self.w4)
+        # z1, a1, z2, a2, z3, a3, z4
+        #  0   1   2   3   4   5   6
         for e in sample:
-            d1 = 2*(loss)
-            return
+            y_true = e[1]+self.discount*self.forward(e[2])[0][0]
+            y_pred = self.forward(e[0])[0][0]
+            dz4 = 2*(y_pred-y_true)
+            dw4 += dz4*e[3][5]
+            dz3 = np.dot(self.w4, e.a3)*self.relu_derivative(e.z3)
+            dw3 = np.dot(dz3, e.a2)
+            dz2 = np.dot(self.w3, e.a2)*self.relu_derivative(e.z2)
+            dw2 = np.dot(dz2, self.a1)
+            dz1 = np.dot(self.w2, e.a1)*self.relu_derivative(e.z1)
+            dw1 = np.dot(dz1, e.current_state)
+        self.w1 -= dw1/sample_len*self.alpha
+        self.w2 -= dw2/sample_len*self.alpha
+        self.w3 -= dw3/sample_len*self.alpha
+        self.w4 -= dw4/sample_len*self.alpha
         return
     
     def loss_func(self, sample): # MSE
         sum = 0.0
+        cnt = 0.0
         for e in sample:
-            y = e[1]+self.discount*self.forward(e[2])[0]
-            q_value = self.forward(e[0])[0]
-            sum+=(y-q_value)*(y-q_value)
-        return sum/float(len(sample))
+            y_true = e[1]+self.discount*self.forward(e[2])[0][0]
+            y_pred = self.forward(e[0])[0][0]
+            sum+=(y_pred-y_true)*(y_pred-y_true)
+            cnt+=1.0
+        return float(sum/cnt)
      
     def pick_action(self, input, size):
+        mx = None
+        for i in range(len(input)):
+            q_value = self.forward(input[i])[0][0] 
+            if(mx == None or q_value>mx):
+                mx = q_value
+                self.decision = i
         if(np.random.normal(0, 1, 1)<=self.exploration_rate):
-            mx = None
-            for i in range(len(input)):
-                q_value = self.forward(input[i])[0] 
-                if(mx == None or q_value>mx):
-                    mx = q_value
-                    self.decision = i
-        else:
             self.decision = np.random.randint(4)
         self.minus_move()
         self.plus_move(size)
         pygame.event.post(self.keys[self.decision])
-        reward = self.size*(float(self.move_left)/float(self.default_move/2))
+        reward = self.size*(float(self.move_left)/float(self.default_move/2)/100)
         self.record_action(self.current_state, reward, input[self.decision], self.getHidden())
         self.setCurrentState(input[self.decision])
         return
     
-    def record_action(self, current_state, reward, next_state, hidden):
-        self.record.append((current_state, reward, next_state, hidden))
+    def record_action(self, max_q, reward, max_next_q, hidden):
+        self.record.append((max_q, reward, max_next_q, hidden))
         return
