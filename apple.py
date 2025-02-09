@@ -15,6 +15,12 @@ class Apple:
         self.rect = pygame.Rect((500, 500, self.width, self.height))
         self.ava_pos = {}
 
+    def getX(self):
+        return self.rect.x
+    
+    def getY(self):
+        return self.rect.y
+
     def getPixelX(self):
         return int(self.rect.x/self.width)
     

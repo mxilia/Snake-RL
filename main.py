@@ -34,7 +34,7 @@ def update():
 def play():
     while(env.plr.alive and run and not agent.done):
         if(user == False and env.plr.completeMovement()):
-            agent.pick_action(env.getNextState(), env.plr.size)
+            agent.pick_action(env.getNextState(), env.plr.getSize(), env.getDistBAP())
         update()
         paint()
       #  clock.tick(120)
@@ -44,7 +44,7 @@ def train_agent():
     for i in range(agent.episode):
         agent.reset()
         env.reset()
-        agent.setCurrentState(np.array(env.getState()).reshape(1, env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL))
+        agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
         agent.back_prop()
     return

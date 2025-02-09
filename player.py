@@ -34,6 +34,9 @@ class Player:
         if(index>=self.size or index<0): return None
         return int(self.rect[index][1].y/self.height)
     
+    def getSize(self):
+        return self.size
+    
     def copyPlayer(self, plr):
         self.rect.clear()
         for i in range(len(plr.rect)):

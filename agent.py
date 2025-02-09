@@ -4,10 +4,10 @@ import random
 
 class Neural_Net:
     # Structure: input (grid) -> 64 -> 64 -> 64 -> Q-Value
-    episode = 500
+    episode = 5000
     batch = 32
 
-    alpha = 0.05
+    alpha = 0.01
     discount = 0.6
     default_move = 100
     
@@ -49,7 +49,7 @@ class Neural_Net:
     def gen_weight(self, l1, l2):
         list = []
         for i in range(l1*l2):
-            list.append(np.random.ranf())
+            list.append(100*np.random.ranf()-50)
         return np.array(list).reshape(l1, l2)
     
     def reset(self):
@@ -84,7 +84,11 @@ class Neural_Net:
         return x*(x>0)
 
     def relu_derivative(self, x):
-        return int(x>0)
+        return x>0
+    
+    def calc_reward(self, dist):
+        const = 0.00001
+        return self.size
     
     def forward(self, input):
         self.z1 = np.dot(input, self.w1)
@@ -100,7 +104,7 @@ class Neural_Net:
         if(len(self.record) == 0): return
         loss = self.loss_func(self.record)
         sample = random.sample(self.record, min(self.batch, len(self.record)))
-        sample_len = len(sample)
+        sample_len = float(len(sample))
         print("Loss: ", loss)
         dw1 = np.zeros_like(self.w1)
         dw2 = np.zeros_like(self.w2)
@@ -109,16 +113,18 @@ class Neural_Net:
         # z1, a1, z2, a2, z3, a3, z4
         #  0   1   2   3   4   5   6
         for e in sample:
-            y_true = e[1]+self.discount*self.forward(e[2])[0][0]
-            y_pred = self.forward(e[0])[0][0]
-            dz4 = 2*(y_pred-y_true)
-            dw4 += dz4*e[3][5]
-            dz3 = np.dot(self.w4, e.a3)*self.relu_derivative(e.z3)
-            dw3 = np.dot(dz3, e.a2)
-            dz2 = np.dot(self.w3, e.a2)*self.relu_derivative(e.z2)
-            dw2 = np.dot(dz2, self.a1)
-            dz1 = np.dot(self.w2, e.a1)*self.relu_derivative(e.z1)
-            dw1 = np.dot(dz1, e.current_state)
+            y_true = e[1]+self.discount*self.forward(e[2])
+            y_pred = self.forward(e[0])
+            # Compute Gradient
+            dz4 = y_pred-y_true
+            dz3 = np.dot(dz4, self.w4.T)*self.relu_derivative(e[3][4])
+            dz2 = np.dot(dz3, self.w3.T)*self.relu_derivative(e[3][2])
+            dz1 = np.dot(dz2, self.w2.T)*self.relu_derivative(e[3][0])
+            # Compute Weight
+            dw4 += e[3][5].T.reshape(64, 1)*dz4
+            dw3 += np.dot(e[3][3].T, dz3)
+            dw2 += np.dot(e[3][1].T, dz2)
+            dw1 += e[0].T.reshape(1200, 1)*dz1.reshape(1, 64)
         self.w1 -= dw1/sample_len*self.alpha
         self.w2 -= dw2/sample_len*self.alpha
         self.w3 -= dw3/sample_len*self.alpha
@@ -129,16 +135,17 @@ class Neural_Net:
         sum = 0.0
         cnt = 0.0
         for e in sample:
-            y_true = e[1]+self.discount*self.forward(e[2])[0][0]
-            y_pred = self.forward(e[0])[0][0]
+            y_true = e[1]+self.discount*self.forward(e[2])[0]
+            y_pred = self.forward(e[0])[0]
+            print(y_pred, y_true)
             sum+=(y_pred-y_true)*(y_pred-y_true)
             cnt+=1.0
         return float(sum/cnt)
      
-    def pick_action(self, input, size):
+    def pick_action(self, input, size, dist):
         mx = None
         for i in range(len(input)):
-            q_value = self.forward(input[i])[0][0] 
+            q_value = self.forward(input[i])[0]
             if(mx == None or q_value>mx):
                 mx = q_value
                 self.decision = i
@@ -146,8 +153,8 @@ class Neural_Net:
             self.decision = np.random.randint(4)
         self.minus_move()
         self.plus_move(size)
-        pygame.event.post(self.keys[self.decision])
-        reward = self.size*(float(self.move_left)/float(self.default_move/2)/100)
+       # pygame.event.post(self.keys[self.decision])
+        reward = self.calc_reward(dist)
         self.record_action(self.current_state, reward, input[self.decision], self.getHidden())
         self.setCurrentState(input[self.decision])
         return

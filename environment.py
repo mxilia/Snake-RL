@@ -27,6 +27,9 @@ class Environment:
         self.setup_state()
         return
     
+    def getDistBAP(self):
+        return np.sqrt((self.plr.getX(0)-self.apple.getX())*(self.plr.getX(0)-self.apple.getX())+(self.plr.getY(0)-self.apple.getY())*(self.plr.getY(0)-self.apple.getY()))
+    
     def getNextState(self):
         list = []
         for i in range(len(self.plr.dir)):
@@ -42,7 +45,7 @@ class Environment:
             next_body = next_plr.getBodyPixel()
             for e in next_body:
                 next_state[e[1]][e[0]] = 1.0
-            list.append(np.array(next_state).reshape(1, self.SCR_WIDTH_PIXEL*self.SCR_HEIGHT_PIXEL))
+            list.append(np.array(next_state).reshape(self.SCR_WIDTH_PIXEL*self.SCR_HEIGHT_PIXEL,))
         return list
 
     def getState(self):
