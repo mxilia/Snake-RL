@@ -1,7 +1,7 @@
 import pygame
 import numpy as np
 from environment import Environment
-from agent import Neural_Net
+from agent import DQN
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -10,7 +10,13 @@ user = False
 train = True
 run = True
 env = Environment()
-agent = Neural_Net(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL)
+agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL)
+
+key_W = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_w)
+key_A = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)
+key_S = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_s)
+key_D = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_d)
+keys = [key_W, key_A, key_S, key_D]
 
 def checkEvent():
     for e in pygame.event.get():
@@ -32,12 +38,19 @@ def update():
     return
 
 def play():
-    while(env.plr.alive and run and not agent.done):
+    while(True):
+        if(not run): break
+        if(env.plr.alive == False): break
         if(user == False and env.plr.completeMovement()):
-            agent.pick_action(env.getNextState(), env.plr.getSize(), env.getDistBAP())
+            if(agent.done == True): break
+            action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
+            pygame.event.post(keys[action])
+            agent.update_reward(env.plr.getSize())
+            agent.record(action, np.array(env.emulate(action)).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
+            agent.replay()
         update()
         paint()
-      #  clock.tick(120)
+        clock.tick(120)
     return
 
 def train_agent():
@@ -46,7 +59,6 @@ def train_agent():
         env.reset()
         agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
-        agent.back_prop()
     return
 
 if __name__ == "__main__":
@@ -56,3 +68,5 @@ if __name__ == "__main__":
         else: play()
     else: play()
     pygame.quit()
+    if(train == True):
+        agent.result()

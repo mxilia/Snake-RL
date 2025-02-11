@@ -40,13 +40,15 @@ class Apple:
         self.onScreen = True
         self.ava_pos.clear()
         for rect in occupied:
-            self.ava_pos[str(rect[1].x) + " " + str(rect[1].y)] = True
-        x = random.randint(0, self.boundPixelX-1)*self.width
-        y = random.randint(0, self.boundPixelY-1)*self.height
-        while(str(x) + " " + str(y) in self.ava_pos):
-            x = random.randint(0, self.boundPixelX-1)*self.width
-            y = random.randint(0, self.boundPixelY-1)*self.height
-        self.rect = pygame.Rect((x, y, self.width, self.height))
+            self.ava_pos[str(rect[0]) + " " + str(rect[1])] = True
+        x = random.randint(0, self.boundPixelX-1)
+        y = random.randint(0, self.boundPixelY-1)
+        key = str(x) + " " + str(y)
+        while(key in self.ava_pos):
+            x = random.randint(0, self.boundPixelX-1)
+            y = random.randint(0, self.boundPixelY-1)
+            key = str(x) + " " + str(y)
+        self.rect = pygame.Rect((x*self.width, y*self.height, self.width, self.height))
 
     def collide(self, x, y):
         if(self.rect.x == x and self.rect.y == y):

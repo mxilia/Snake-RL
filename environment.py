@@ -27,26 +27,23 @@ class Environment:
         self.setup_state()
         return
     
-    def getDistBAP(self):
+    def getDist(self):
         return np.sqrt((self.plr.getX(0)-self.apple.getX())*(self.plr.getX(0)-self.apple.getX())+(self.plr.getY(0)-self.apple.getY())*(self.plr.getY(0)-self.apple.getY()))
     
-    def getNextState(self):
-        list = []
-        for i in range(len(self.plr.dir)):
-            next_state = self.new_state()
-            next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
-            next_plr.copyPlayer(self.plr)
-            next_apple = Apple(self.SCR_WIDTH_PIXEL, self.SCR_HEIGHT)
-            next_apple.copyApple(self.apple)
-            next_plr.changeDir(i)
-            next_plr.move()
-            while(not next_plr.completeMovement()): next_plr.move()
-            next_plr.grow(next_apple.collide(next_plr.getX(0), next_plr.getY(0)))
-            next_body = next_plr.getBodyPixel()
-            for e in next_body:
-                next_state[e[1]][e[0]] = 1.0
-            list.append(np.array(next_state).reshape(self.SCR_WIDTH_PIXEL*self.SCR_HEIGHT_PIXEL,))
-        return list
+    def emulate(self, action):
+        next_state = self.new_state()
+        next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
+        next_plr.copyPlayer(self.plr)
+        next_apple = Apple(self.SCR_WIDTH_PIXEL, self.SCR_HEIGHT)
+        next_apple.copyApple(self.apple)
+        next_plr.changeDir(action)
+        next_plr.move()
+        while(not next_plr.completeMovement()): next_plr.move()
+        next_plr.grow(next_apple.collide(next_plr.getX(0), next_plr.getY(0)))
+        next_body = next_plr.getBodyPixel()
+        for e in next_body:
+            next_state[e[1]][e[0]] = 1.0
+        return next_state
 
     def getState(self):
         list = []
@@ -78,7 +75,7 @@ class Environment:
             self.key_order.pop()
         self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
         self.plr.move()
-        self.apple.generate(self.plr.rect)
+        self.apple.generate(self.plr.getBodyPixel())
         self.update_state()
         return
     

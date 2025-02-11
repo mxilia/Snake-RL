@@ -1,11 +1,10 @@
 from collections import deque
 
 class Queue:
-    dq = deque([])
-    sz = 0
 
     def __init__(self):
-        pass
+        self.dq = deque([])
+        self.sz = 0
 
     def push(self, x):
         self.dq.append(x)
