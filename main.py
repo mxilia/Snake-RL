@@ -45,12 +45,13 @@ def play():
             if(agent.done == True): break
             action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
             pygame.event.post(keys[action])
-            agent.update_reward(env.plr.getSize())
+            agent.update_reward(env.plr.getSize(), not env.plr.alive)
             agent.record(action, np.array(env.emulate(action)).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
             agent.replay()
         update()
         paint()
-        clock.tick(120)
+        #clock.tick(120)
+    agent.update_reward(env.plr.getSize(), not env.plr.alive)
     return
 
 def train_agent():

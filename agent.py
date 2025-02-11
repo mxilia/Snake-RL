@@ -6,15 +6,15 @@ import random
 
 class DQN:
     # Structure: input (grid) -> 64 -> 64 -> 64 -> 4 Q-Value for wasd
-    episode = 1000
+    episode = 10000
     batch_size = 32
 
     alpha = 0.01
     discount = 0.99
     default_move = 100
     
-    epsilon_decay = 0.999
-    epsilon_min = 0.01
+    epsilon_decay = 0.99
+    epsilon_min = 0.1
 
     hidden_node = 64
     output_node = 4
@@ -37,6 +37,8 @@ class DQN:
         self.done = False
         self.reward_list.append(self.reward)
         self.reward = 0
+        self.prev_size = 1
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
         return
 
     def setCurrentState(self, current_state):
@@ -49,23 +51,24 @@ class DQN:
         current_qvalue = np.array(self.online_network.forward(np.stack(sample[:,0])))
         target_qvalue = sample[:,2]+self.discount*np.max(self.target_network.forward(np.stack(sample[:,3])))*(1-sample[:,4])
         current_qvalue[np.arange(len(target_qvalue)),list(sample[:,1])] = target_qvalue
-        self.online_network.back_prop(current_qvalue, alpha=self.alpha)
+        self.online_network.back_prop(current_qvalue, np.stack(sample[:,0]), self.batch_size, alpha=self.alpha)
+        self.target_network.update_network(self.online_network.w)
         return
     
-    def update_reward(self, size):
-        self.reward-=1
+    def update_reward(self, size, status):
+        self.done = status
+        self.reward-=0.1
         if(size>self.prev_size):
             self.prev_size = size
-            self.reward+=50
+            self.reward=max(0, self.reward+100)
         if(self.done):
-            self.reward+=self.prev_size*2
+            self.reward-=self.input_node-2*size
         return
      
     def pick_action(self, state):
         optimal_action = np.argmax(self.online_network.forward(np.array([state]))[0])
         random_action = np.random.randint(0, 4)
         action = np.random.choice([optimal_action, random_action], p=[1-self.epsilon, self.epsilon])
-        if(self.epsilon>self.epsilon_min): self.epsilon = self.epsilon*self.epsilon_decay
         return action
     
     def record(self, action, next_state):
@@ -74,8 +77,9 @@ class DQN:
         return
     
     def result(self):
-        plt.figure(figsize=(10,5),dpi=200)
+        plt.figure(figsize=(6,4), dpi=100)
         plt.plot(self.reward_list)
         plt.xlabel('Episode')
         plt.ylabel('Reward')
+        plt.show()
         return

@@ -16,8 +16,20 @@ class Player:
         self.default_key = 3
         self.collide = True
         self.move_cnt = 0
-        self.rect.append([self.default_key, pygame.Rect((0, 0, self.width, self.height))])
+        self.rect.append([self.default_key, pygame.Rect((SCR_WIDTH/2-self.width, SCR_HEIGHT/2-self.height, self.width, self.height))])
 
+    def reset(self):
+        self.alive = True
+        self.size = 1
+        self.move_cnt = 0
+        self.rect.clear()
+        self.rect.append([self.default_key, pygame.Rect((self.SCR_WIDTH/2-self.width, self.SCR_HEIGHT/2-self.height, self.width, self.height))])
+
+    def dead(self):
+        self.alive = False
+        self.size = 0
+        self.rect.clear()
+        return
     def getX(self, index):
         if(index>=self.size or index<0): return None
         return self.rect[index][1].x
@@ -65,18 +77,7 @@ class Player:
                 return True
         return False
     
-    def reset(self):
-        self.alive = True
-        self.size = 1
-        self.move_cnt = 0
-        self.rect.clear()
-        self.rect.append([self.default_key, pygame.Rect((0, 0, self.width, self.height))])
-
-    def dead(self):
-        self.alive = False
-        self.size = 0
-        self.rect.clear()
-        return
+    
 
     def changeDir(self, key):
         if(self.alive == False): return

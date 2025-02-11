@@ -88,22 +88,24 @@ class Environment:
         self.current_body = self.plr.getBodyPixel()
         self.current_apple = self.apple.getPixelTuple()
         if(self.current_body != self.prev_body):
-            for e in self.prev_body:
-                self.state[e[1]][e[0]] = 0.0
+            if(self.prev_apple != None):
+                for e in self.prev_body:
+                    self.state[e[1]][e[0]] = -1.0
             for e in self.current_body:
                 self.state[e[1]][e[0]] = 1.0
             self.prev_body = self.current_body
         if(self.current_apple != self.prev_apple):
+            if(self.prev_apple != None): self.state[self.prev_apple[1]][self.prev_apple[0]] = -1.0
             self.state[self.current_apple[1]][self.current_apple[0]] = 1.0
             self.prev_apple = self.current_apple
         return
     
     def setup_state(self):
         self.state.clear()
+        self.prev_body = None
+        self.prev_apple = None
         self.state = self.new_state()
         self.update_state()
-        self.prev_body = self.plr.getBodyPixel()
-        self.prev_apple = self.apple.getPixelTuple()
         return
     
     def new_state(self):
