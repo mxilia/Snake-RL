@@ -55,19 +55,22 @@ def play():
     return
 
 def train_agent():
+    #agent.get_model()
     for i in range(agent.episode):
         agent.reset()
         env.reset()
         agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
+    agent.save_model()
     return
 
 if __name__ == "__main__":
     if(user == False): 
-        if(train == True): 
+        if(train == True):
             train_agent()
         else: play()
     else: play()
     pygame.quit()
     if(train == True):
         agent.result()
+        

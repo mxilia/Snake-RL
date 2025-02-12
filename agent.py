@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
@@ -6,7 +7,7 @@ import random
 
 class DQN:
     # Structure: input (grid) -> 64 -> 64 -> 64 -> 4 Q-Value for wasd
-    episode = 10000
+    episode = 1000
     batch_size = 32
 
     alpha = 0.01
@@ -36,9 +37,35 @@ class DQN:
     def reset(self):
         self.done = False
         self.reward_list.append(self.reward)
+        if(self.reward<0): self.epsilon = 1.0
         self.reward = 0
         self.prev_size = 1
-        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        return
+    
+    def save_model(self):
+        epoch = int(open("./model/epoch.txt", "r").read())+1
+        online_directory = f"./model/epoch_{epoch}/online.txt"
+        target_directory = f"./model/epoch_{epoch}/target.txt"
+        try:
+            os.mkdir(online_directory)
+            os.mkdir(target_directory)
+            print("Success")
+        except FileExistsError:
+            pass
+        except PermissionError:
+            print("Denied")
+            return
+        except Exception as e:
+            print("Error")
+            return
+        file = open(online_directory, 'w')
+        weight = self.online_network.getWeight()
+        for e in weight:
+            print(weight)
+        return
+        file= open("./model/epoch.txt", "w")
+        file.write(str(epoch))
+        print(f"Saved epoch_{epoch} successfully.")
         return
 
     def setCurrentState(self, current_state):
@@ -69,6 +96,7 @@ class DQN:
         optimal_action = np.argmax(self.online_network.forward(np.array([state]))[0])
         random_action = np.random.randint(0, 4)
         action = np.random.choice([optimal_action, random_action], p=[1-self.epsilon, self.epsilon])
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
         return action
     
     def record(self, action, next_state):

@@ -16,7 +16,10 @@ class Neural_Network:
         self.dz = [None for i in range(self.layers+1)]
         return
     
-    def update_network(self, weight, tao=0.005):
+    def getWeight(self):
+        return self.w
+
+    def update_network(self, weight, tao=0.001):
         for i in range(len(weight)): self.w[i] = tao*weight[i]+(1-tao)*self.w[i]
         return
     
