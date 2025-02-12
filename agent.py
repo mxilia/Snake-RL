@@ -3,6 +3,7 @@ import numpy as np
 from collections import deque
 import matplotlib.pyplot as plt
 from neural_network import Neural_Network
+import utility as util
 import random
 
 class DQN:
@@ -30,40 +31,51 @@ class DQN:
         self.current_state = None
         self.reward = 0
         self.prev_size = 1
+        self.default_move = 150
+        self.time = 0
+        self.remaining_move = self.default_move
         self.done = False
         self.online_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
         self.target_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
     
     def reset(self):
         self.done = False
+        self.remaining_move = self.default_move
         self.reward_list.append(self.reward)
-        if(self.reward<0): self.epsilon = 1.0
+        if(self.reward<0 and self.epsilon<0.5): self.epsilon = 0.5
         self.reward = 0
         self.prev_size = 1
+        return
+
+    def get_model(self):
+        return
+        epoch = int(open("./model/epoch.txt", "r").read())
+        online_directory = f"./model/epoch_{epoch}/online.txt"
+        target_directory = f"./model/epoch_{epoch}/target.txt"
+        epsilon_directory = f"./model/epoch_{epoch}/epsilon.txt"
+        #with open(online_directory, )
+
+        with open(epsilon_directory, "r") as file:
+            file.write(self.epsilon)
         return
     
     def save_model(self):
         epoch = int(open("./model/epoch.txt", "r").read())+1
         online_directory = f"./model/epoch_{epoch}/online.txt"
         target_directory = f"./model/epoch_{epoch}/target.txt"
-        try:
-            os.mkdir(online_directory)
-            os.mkdir(target_directory)
-            print("Success")
-        except FileExistsError:
-            pass
-        except PermissionError:
-            print("Denied")
-            return
-        except Exception as e:
-            print("Error")
-            return
-        file = open(online_directory, 'w')
-        weight = self.online_network.getWeight()
-        for e in weight:
-            print(weight)
-        return
-        file= open("./model/epoch.txt", "w")
+        epsilon_directory = f"./model/epoch_{epoch}/epsilon.txt"
+        util.file_create(online_directory)
+        util.file_create(target_directory)
+        util.file_create(epsilon_directory)
+        online_weight = np.array(self.online_network.getWeight(), dtype=object)
+        target_weight = np.array(self.target_network.getWeight(), dtype=object)
+        np.set_printoptions(threshold=np.inf)
+        np.savetxt(online_directory, online_weight, fmt="%s")
+        np.savetxt(target_directory, target_weight, fmt="%s")
+        with open(epsilon_directory, "w") as file:
+            file.write(str(self.epsilon))
+        if(input() == "n"): return
+        file = open("./model/epoch.txt", "w")
         file.write(str(epoch))
         print(f"Saved epoch_{epoch} successfully.")
         return
@@ -84,12 +96,16 @@ class DQN:
     
     def update_reward(self, size, status):
         self.done = status
-        self.reward-=0.1
+        self.remaining_move-=1
+        self.reward+=1
         if(size>self.prev_size):
             self.prev_size = size
             self.reward=max(0, self.reward+100)
+            self.remaining_move+=self.default_move
+        if(self.remaining_move==0):
+            self.done = True
         if(self.done):
-            self.reward-=self.input_node-2*size
+            self.reward-=self.input_node-2*size+self.time
         return
      
     def pick_action(self, state):

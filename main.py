@@ -50,18 +50,17 @@ def play():
             agent.replay()
         update()
         paint()
-        #clock.tick(120)
+        clock.tick(120)
     agent.update_reward(env.plr.getSize(), not env.plr.alive)
     return
 
 def train_agent():
-    #agent.get_model()
+    agent.get_model()
     for i in range(agent.episode):
         agent.reset()
         env.reset()
         agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
-    agent.save_model()
     return
 
 if __name__ == "__main__":
@@ -72,5 +71,6 @@ if __name__ == "__main__":
     else: play()
     pygame.quit()
     if(train == True):
+        agent.save_model()
         agent.result()
         

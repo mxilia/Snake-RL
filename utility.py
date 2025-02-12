@@ -1,4 +1,5 @@
 from collections import deque
+import os
 
 class Queue:
 
@@ -36,3 +37,16 @@ class Queue:
             self.push(queue.front())
             queue.pop()
         return
+    
+
+def file_create(directory):
+    try:
+        os.mkdir(directory, exist_ok=True)
+        print("Success")
+    except PermissionError:
+        print("Denied")
+        return
+    except Exception as e:
+        print("Error")
+        return
+    return

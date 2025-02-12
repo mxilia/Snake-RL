@@ -43,7 +43,6 @@ class Neural_Network:
     
     def back_prop(self, sample, input, batch_size, alpha=0.5):
         self.dz[self.layers-1] = self.mse_derivative(self.z[self.layers-1], sample)
-        print(self.mse_loss(self.z[self.layers-1], sample))
         for i in range(self.layers-2, 0, -1): self.dz[i] = np.dot(self.dz[i+1], self.w[i].T)*self.relu_derivative(self.z[i])/batch_size
         self.dw[0] = np.dot(input.T, self.z[1])/batch_size
         for i in range(1, self.layers-1): self.dw[i] = np.dot(self.a[i].T, self.z[i+1])/batch_size
