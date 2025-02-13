@@ -39,10 +39,14 @@ class Queue:
         return
     
 
-def file_create(directory):
+def create_directory(directory):
+    print(directory)
     try:
-        os.mkdir(directory, exist_ok=True)
+        os.mkdir(directory)
         print("Success")
+    except FileExistsError:
+        print("Existed")
+        return
     except PermissionError:
         print("Denied")
         return

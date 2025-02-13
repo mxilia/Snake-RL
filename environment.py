@@ -4,12 +4,18 @@ from player import Player
 from apple import Apple
 from utility import Queue
 
-class Environment:
+class Snake_Game:
     pixel_size = 20
     SCR_WIDTH = 800
     SCR_HEIGHT = 600
     SCR_WIDTH_PIXEL = int(SCR_WIDTH/pixel_size)
     SCR_HEIGHT_PIXEL = int(SCR_HEIGHT/pixel_size)
+
+    key_W = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_w)
+    key_A = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)
+    key_S = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_s)
+    key_D = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_d)
+    keys = [key_W, key_A, key_S, key_D]
     
     def __init__(self):
         self.screen = pygame.display.set_mode((self.SCR_WIDTH, self.SCR_HEIGHT))
@@ -26,6 +32,11 @@ class Environment:
         self.plr.reset()
         self.setup_state()
         return
+    
+    def getReward(self, mul=10):
+        reward = self.plr.getMoveCnt()*0.5+self.plr.getSize()*mul
+        if(self.plr.alive == False): reward-=100
+        return reward
     
     def getDist(self):
         return np.sqrt((self.plr.getX(0)-self.apple.getX())*(self.plr.getX(0)-self.apple.getX())+(self.plr.getY(0)-self.apple.getY())*(self.plr.getY(0)-self.apple.getY()))
@@ -53,6 +64,10 @@ class Environment:
                 row.append(self.state[i][j])
             list.append(row)
         return list
+    
+    def postAction(self, action):
+        pygame.event.post(self.keys[action])
+        return
 
     def checkEvent(self, e):
         if(e.type != pygame.KEYDOWN): return

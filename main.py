@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from environment import Environment
+from environment import Snake_Game
 from agent import DQN
 
 pygame.init()
@@ -9,14 +9,8 @@ clock = pygame.time.Clock()
 user = False
 train = True
 run = True
-env = Environment()
-agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL)
-
-key_W = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_w)
-key_A = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)
-key_S = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_s)
-key_D = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_d)
-keys = [key_W, key_A, key_S, key_D]
+env = Snake_Game()
+agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL, env)
 
 def checkEvent():
     for e in pygame.event.get():
@@ -44,33 +38,39 @@ def play():
         if(user == False and env.plr.completeMovement()):
             if(agent.done == True): break
             action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-            pygame.event.post(keys[action])
-            agent.update_reward(env.plr.getSize(), not env.plr.alive)
+            env.postAction(action)
             agent.record(action, np.array(env.emulate(action)).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
             agent.replay()
         update()
         paint()
-        clock.tick(120)
-    agent.update_reward(env.plr.getSize(), not env.plr.alive)
+        if(train == False or user == True): clock.tick(120)
+    agent.replay()
     return
 
 def train_agent():
-    agent.get_model()
     for i in range(agent.episode):
-        agent.reset()
-        env.reset()
+        print(i+1)
         agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
+        if(not run): break
+        agent.reset()
+        env.reset()
     return
 
 if __name__ == "__main__":
-    if(user == False): 
+    if(user == False):
+        agent.get_model()
+        agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         if(train == True):
             train_agent()
-        else: play()
+        else:
+            agent.epsilon = 0.0
+            play()
     else: play()
     pygame.quit()
     if(train == True):
-        agent.save_model()
         agent.result()
+        agent.save_model()
+    
+        
         

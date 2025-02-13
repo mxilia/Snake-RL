@@ -11,20 +11,19 @@ class DQN:
     episode = 1000
     batch_size = 32
 
-    alpha = 0.01
+    alpha = 0.005
     discount = 0.99
-    default_move = 100
+    default_move = 200
     
     epsilon_decay = 0.99
     epsilon_min = 0.1
 
     hidden_node = 64
     output_node = 4
-
-    reward_list = []
-
-    def __init__(self, input_node):
+    
+    def __init__(self, input_node, env):
         self.input_node = input_node
+        self.env = env
         self.epsilon = 1.0
         self.decision = 0
         self.experience = deque(maxlen=100000)
@@ -35,6 +34,7 @@ class DQN:
         self.time = 0
         self.remaining_move = self.default_move
         self.done = False
+        self.reward_list = []
         self.online_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
         self.target_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
     
@@ -48,33 +48,37 @@ class DQN:
         return
 
     def get_model(self):
-        return
         epoch = int(open("./model/epoch.txt", "r").read())
-        online_directory = f"./model/epoch_{epoch}/online.txt"
-        target_directory = f"./model/epoch_{epoch}/target.txt"
-        epsilon_directory = f"./model/epoch_{epoch}/epsilon.txt"
-        #with open(online_directory, )
-
-        with open(epsilon_directory, "r") as file:
-            file.write(self.epsilon)
+        if(epoch == 0): return
+        epoch_directory = f"./model/epoch_{epoch}"
+        stats_file = f"./model/epoch_{epoch}/stats.txt"
+        layers = None
+        with open(stats_file, "r") as file:
+            self.epsilon = float(file.readline())
+            layers = int(file.readline())
+        online_weight = [np.loadtxt(epoch_directory+f"/online_{i+1}.txt", delimiter=" ", dtype=float) for i in range(layers)]
+        target_weight = [np.loadtxt(epoch_directory+f"/target_{i+1}.txt", delimiter=" ", dtype=float) for i in range(layers)]
+        self.online_network.copy_network(online_weight)
+        self.online_network.copy_network(target_weight)
         return
     
     def save_model(self):
+        if(len(self.reward_list)<self.episode):
+            print("Not enough episodes.")
+            return
         epoch = int(open("./model/epoch.txt", "r").read())+1
-        online_directory = f"./model/epoch_{epoch}/online.txt"
-        target_directory = f"./model/epoch_{epoch}/target.txt"
-        epsilon_directory = f"./model/epoch_{epoch}/epsilon.txt"
-        util.file_create(online_directory)
-        util.file_create(target_directory)
-        util.file_create(epsilon_directory)
-        online_weight = np.array(self.online_network.getWeight(), dtype=object)
-        target_weight = np.array(self.target_network.getWeight(), dtype=object)
+        epoch_directory = f"./model/epoch_{epoch}"
+        stats_file = f"./model/epoch_{epoch}/stats.txt"
+        reward_file = f"./model/epoch_{epoch}/reward_list.txt"
+        util.create_directory(epoch_directory)
+        online_weight = self.online_network.getWeight()
+        target_weight = self.target_network.getWeight()
+        reward_list = np.array(self.reward_list).reshape(len(self.reward_list))
         np.set_printoptions(threshold=np.inf)
-        np.savetxt(online_directory, online_weight, fmt="%s")
-        np.savetxt(target_directory, target_weight, fmt="%s")
-        with open(epsilon_directory, "w") as file:
-            file.write(str(self.epsilon))
-        if(input() == "n"): return
+        for i in range(len(online_weight)): np.savetxt(epoch_directory+f"/online_{i+1}.txt", online_weight[i], delimiter=" ", fmt="%s")
+        for i in range(len(target_weight)): np.savetxt(epoch_directory+f"/target_{i+1}.txt", target_weight[i], delimiter=" ", fmt="%s")
+        with open(stats_file, "w") as file: file.write(str(self.epsilon)+"\n"+str(len(online_weight)))
+        np.savetxt(reward_file, reward_list, delimiter=" ", fmt="%s")
         file = open("./model/epoch.txt", "w")
         file.write(str(epoch))
         print(f"Saved epoch_{epoch} successfully.")
@@ -85,6 +89,7 @@ class DQN:
         return
     
     def replay(self):
+        self.reward = self.env.getReward()
         if(len(self.experience)<self.batch_size): return
         sample = np.array(random.sample(self.experience, self.batch_size), dtype=object)
         current_qvalue = np.array(self.online_network.forward(np.stack(sample[:,0])))
@@ -92,20 +97,6 @@ class DQN:
         current_qvalue[np.arange(len(target_qvalue)),list(sample[:,1])] = target_qvalue
         self.online_network.back_prop(current_qvalue, np.stack(sample[:,0]), self.batch_size, alpha=self.alpha)
         self.target_network.update_network(self.online_network.w)
-        return
-    
-    def update_reward(self, size, status):
-        self.done = status
-        self.remaining_move-=1
-        self.reward+=1
-        if(size>self.prev_size):
-            self.prev_size = size
-            self.reward=max(0, self.reward+100)
-            self.remaining_move+=self.default_move
-        if(self.remaining_move==0):
-            self.done = True
-        if(self.done):
-            self.reward-=self.input_node-2*size+self.time
         return
      
     def pick_action(self, state):

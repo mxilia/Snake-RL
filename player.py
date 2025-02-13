@@ -30,6 +30,10 @@ class Player:
         self.size = 0
         self.rect.clear()
         return
+    
+    def getMoveCnt(self):
+        return self.move_cnt
+    
     def getX(self, index):
         if(index>=self.size or index<0): return None
         return self.rect[index][1].x
@@ -77,8 +81,6 @@ class Player:
                 return True
         return False
     
-    
-
     def changeDir(self, key):
         if(self.alive == False): return
         if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height):
