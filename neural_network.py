@@ -54,14 +54,14 @@ class Neural_Network:
     def mse_derivative(self, y_pred, y_true):
         return 2*(y_pred-y_true)/(y_true.size)
     
-    def value_clipping(self, x, clip_value=1e5):
+    def value_clipping(self, x, clip_value=1e7):
         return np.clip(x, -clip_value, clip_value)
     
     def back_prop(self, sample, input, batch_size, alpha=0.5):
         self.dz[self.layers-1] = self.value_clipping(self.mse_derivative(self.z[self.layers-1], sample))
-        for i in range(self.layers-2, 0, -1): self.dz[i] = np.dot(self.dz[i+1], self.w[i].T)*self.deriv_act_func(self.z[i])/batch_size
-        self.dw[0] = np.dot(input.T, self.z[1])/batch_size
-        for i in range(1, self.layers-1): self.dw[i] = np.dot(self.a[i].T, self.z[i+1])/batch_size
+        for i in range(self.layers-2, 0, -1): self.dz[i] = np.dot(self.dz[i+1], self.w[i].T)*self.deriv_act_func(self.z[i])
+        self.dw[0] = np.dot(input.T, self.dz[1])/batch_size
+        for i in range(1, self.layers-1): self.dw[i] = np.dot(self.a[i].T, self.dz[i+1])/batch_size
         for i in range(0, self.layers-1): self.w[i] -= alpha*self.dw[i]
         return
     
