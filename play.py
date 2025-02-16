@@ -8,7 +8,6 @@ clock = pygame.time.Clock()
 
 run = True
 env = Snake_Game()
-agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL, env)
 
 def checkEvent():
     for e in pygame.event.get():
