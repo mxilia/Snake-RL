@@ -6,8 +6,6 @@ from agent import DQN
 pygame.init()
 clock = pygame.time.Clock()
 
-user = False
-train = True
 run = True
 env = Snake_Game()
 agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL, env)
@@ -35,7 +33,7 @@ def play():
     while(True):
         if(not run): break
         if(env.plr.alive == False): break
-        if(user == False and env.plr.completeMovement()):
+        if(env.plr.completeMovement()):
             if(agent.done == True): break
             action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
             env.postAction(action)
@@ -43,7 +41,6 @@ def play():
             agent.replay()
         update()
         paint()
-        if(train == False or user == True): clock.tick(120)
     agent.replay()
     return
 
@@ -57,20 +54,8 @@ def train_agent():
         env.reset()
     return
 
-if __name__ == "__main__":
-    if(user == False):
-        agent.get_model()
-        agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-        if(train == True):
-            train_agent()
-        else:
-            agent.epsilon = 0.0
-            play()
-    else: play()
-    pygame.quit()
-    if(train == True):
-        agent.result()
-        agent.save_model()
-    
-        
-        
+while(True):
+    agent.get_model()
+    agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
+    train_agent()
+    agent.save_model()

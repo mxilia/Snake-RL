@@ -37,6 +37,9 @@ class DQN:
         self.reward_list = []
         self.online_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
         self.target_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
+        self.model_directory = self.online_network.model_directory
+        if(not os.path.exists(f"{self.model_directory}/epoch.txt")):
+            with open(f"{self.model_directory}/epoch.txt", "w") as file: file.write("0")
     
     def reset(self):
         self.done = False
@@ -48,39 +51,30 @@ class DQN:
         return
 
     def get_model(self):
-        epoch = int(open("./model/epoch.txt", "r").read())
+        epoch = int(open(f"{self.model_directory}/epoch.txt", "r").read())
         if(epoch == 0): return
-        epoch_directory = f"./model/epoch_{epoch}"
-        stats_file = f"./model/epoch_{epoch}/stats.txt"
-        layers = None
-        with open(stats_file, "r") as file:
-            self.epsilon = float(file.readline())
-            layers = int(file.readline())
-        online_weight = [np.loadtxt(epoch_directory+f"/online_{i+1}.txt", delimiter=" ", dtype=float) for i in range(layers)]
-        target_weight = [np.loadtxt(epoch_directory+f"/target_{i+1}.txt", delimiter=" ", dtype=float) for i in range(layers)]
-        self.online_network.copy_network(online_weight)
-        self.online_network.copy_network(target_weight)
+        epoch_folder = f"epoch_{epoch}"
+        stats_file = f"{self.model_directory}/{epoch_folder}/stats.txt"
+        self.online_network.load_model(epoch_folder, "online")
+        self.target_network.load_model(epoch_folder, "target")
+        with open(stats_file, "r") as file: self.epsilon = float(file.read())
         return
     
     def save_model(self):
         if(len(self.reward_list)<self.episode):
             print("Not enough episodes.")
             return
-        epoch = int(open("./model/epoch.txt", "r").read())+1
-        epoch_directory = f"./model/epoch_{epoch}"
-        stats_file = f"./model/epoch_{epoch}/stats.txt"
-        reward_file = f"./model/epoch_{epoch}/reward_list.txt"
-        util.create_directory(epoch_directory)
-        online_weight = self.online_network.getWeight()
-        target_weight = self.target_network.getWeight()
-        reward_list = np.array(self.reward_list).reshape(len(self.reward_list))
-        np.set_printoptions(threshold=np.inf)
-        for i in range(len(online_weight)): np.savetxt(epoch_directory+f"/online_{i+1}.txt", online_weight[i], delimiter=" ", fmt="%s")
-        for i in range(len(target_weight)): np.savetxt(epoch_directory+f"/target_{i+1}.txt", target_weight[i], delimiter=" ", fmt="%s")
-        with open(stats_file, "w") as file: file.write(str(self.epsilon)+"\n"+str(len(online_weight)))
-        np.savetxt(reward_file, reward_list, delimiter=" ", fmt="%s")
-        file = open("./model/epoch.txt", "w")
-        file.write(str(epoch))
+        epoch = int(open(f"{self.model_directory}/epoch.txt", "r").read())+1
+        epoch_folder = f"epoch_{epoch}"
+        stats_file = f"{self.model_directory}/{epoch_folder}/stats.txt"
+        reward_file = f"{self.model_directory}/{epoch_folder}/reward_list.txt"
+
+        self.online_network.save_model(epoch_folder, "online")
+        self.target_network.save_model(epoch_folder, "target")
+        np.savetxt(reward_file, np.array(self.reward_list).reshape(len(self.reward_list)), delimiter=" ", fmt="%s")
+        with open(stats_file, "w") as file: file.write(str(self.epsilon))
+        with open(f"{self.model_directory}/epoch.txt", "w") as file: file.write(str(epoch))
+
         print(f"Saved epoch_{epoch} successfully.")
         return
 
@@ -95,7 +89,7 @@ class DQN:
         current_qvalue = np.array(self.online_network.forward(np.stack(sample[:,0])))
         target_qvalue = sample[:,2]+self.discount*np.max(self.target_network.forward(np.stack(sample[:,3])))*(1-sample[:,4])
         current_qvalue[np.arange(len(target_qvalue)),list(sample[:,1])] = target_qvalue
-        self.online_network.back_prop(current_qvalue, np.stack(sample[:,0]), self.batch_size, alpha=self.alpha)
+        self.online_network.back_prop(current_qvalue, np.stack(sample[:,0]), alpha=self.alpha)
         self.target_network.update_network(self.online_network.w)
         return
      
