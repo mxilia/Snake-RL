@@ -46,7 +46,7 @@ def play():
 
 def train_agent():
     for i in range(agent.episode):
-        print(i+1)
+        #print(i+1)
         agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
         play()
         if(not run): break

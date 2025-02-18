@@ -39,7 +39,7 @@ def play():
             env.postAction(action)
         update()
         paint()
-        clock.tick(120)
+        clock.tick(60)
     agent.replay()
     return
 

@@ -1,17 +1,15 @@
 import os
 import numpy as np
 from collections import deque
-import matplotlib.pyplot as plt
 from neural_network import Neural_Network
-import utility as util
 import random
 
 class DQN:
     # Structure: input (grid) -> 64 -> 64 -> 64 -> 4 Q-Value for wasd
-    episode = 1000
+    episode = 10000
     batch_size = 32
 
-    alpha = 0.005
+    alpha = 0.007
     discount = 0.99
     default_move = 200
     
@@ -29,10 +27,6 @@ class DQN:
         self.experience = deque(maxlen=100000)
         self.current_state = None
         self.reward = 0
-        self.prev_size = 1
-        self.default_move = 150
-        self.time = 0
-        self.remaining_move = self.default_move
         self.done = False
         self.reward_list = []
         self.online_network = Neural_Network((input_node, self.hidden_node, self.hidden_node, self.hidden_node, self.output_node))
@@ -42,12 +36,8 @@ class DQN:
             with open(f"{self.model_directory}/epoch.txt", "w") as file: file.write("0")
     
     def reset(self):
-        self.done = False
-        self.remaining_move = self.default_move
-        self.reward_list.append(self.reward)
-        if(self.reward<0 and self.epsilon<0.5): self.epsilon = 0.5
-        self.reward = 0
-        self.prev_size = 1
+        self.reward_list.append(self.env.getReward())
+        if(self.env.getReward()<0 and self.epsilon<0.5): self.epsilon = 0.5
         return
 
     def get_model(self):
@@ -83,7 +73,6 @@ class DQN:
         return
     
     def replay(self):
-        self.reward = self.env.getReward()
         if(len(self.experience)<self.batch_size): return
         sample = np.array(random.sample(self.experience, self.batch_size), dtype=object)
         current_qvalue = np.array(self.online_network.forward(np.stack(sample[:,0])))
@@ -101,14 +90,6 @@ class DQN:
         return action
     
     def record(self, action, next_state):
-        self.experience.append((self.current_state, action, self.reward, next_state, self.done)) # s, a, r, s+1, d
+        self.experience.append((self.current_state, action, self.env.getReward(), next_state, not self.env.plr.alive)) # s, a, r, s+1, d
         self.setCurrentState(next_state)
-        return
-    
-    def result(self):
-        plt.figure(figsize=(6,4), dpi=100)
-        plt.plot(self.reward_list)
-        plt.xlabel('Episode')
-        plt.ylabel('Reward')
-        plt.show()
         return

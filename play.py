@@ -34,7 +34,7 @@ def play():
         if(env.plr.alive == False): break
         update()
         paint()
-        clock.tick(120)
+        clock.tick(30)
     return
 
 play()

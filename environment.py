@@ -1,7 +1,44 @@
 import pygame
+from collections import deque
 import numpy as np
-from utility import Queue
 import random
+
+class Queue:
+
+    def __init__(self):
+        self.dq = deque([])
+        self.sz = 0
+
+    def push(self, x):
+        self.dq.append(x)
+        self.sz+=1
+
+    def pop(self):
+        if(self.sz==0): return
+        self.dq.popleft()
+        self.sz-=1
+
+    def empty(self):
+        if(self.sz==0): return True
+        return False
+    
+    def front(self):
+        if(self.sz==0): return -1
+        x = self.dq.popleft()
+        self.dq.appendleft(x)
+        return x
+    
+    def rear(self):
+        if(self.sz==0): return -1
+        x = self.dq.pop()
+        self.dq.append(x)
+        return x
+    
+    def copyQueue(self, queue):
+        while(not queue.empty()):
+            self.push(queue.front())
+            queue.pop()
+        return
 
 class Apple:
     width = 20
@@ -14,8 +51,13 @@ class Apple:
         self.boundPixelX = int(self.SCR_WIDTH/self.width)
         self.boundPixelY = int(self.SCR_HEIGHT/self.height)
         self.onScreen = False
-        self.rect = pygame.Rect((500, 500, self.width, self.height))
         self.ava_pos = {}
+        self.generate([])
+
+    def reset(self):
+        self.onScreen = False
+        self.generate([])
+        return
 
     def getX(self):
         return self.rect.x
@@ -75,6 +117,7 @@ class Player:
         self.alive = True
         self.rect = []
         self.size = 1
+        self.score = 0
         self.default_key = 3
         self.collide = True
         self.move_cnt = 0
@@ -84,6 +127,7 @@ class Player:
         self.alive = True
         self.size = 1
         self.move_cnt = 0
+        self.score = 0
         self.rect.clear()
         self.rect.append([self.default_key, pygame.Rect((self.SCR_WIDTH/2-self.width, self.SCR_HEIGHT/2-self.height, self.width, self.height))])
 
@@ -93,8 +137,10 @@ class Player:
         self.rect.clear()
         return
     
-    def getMoveCnt(self):
-        return self.move_cnt
+    def getScore(self, mul_sz=10, mul_cnt=0.1):
+        if(self.alive == True):
+            self.score = (self.size-1)*mul_sz+self.move_cnt*mul_cnt
+        return self.score
     
     def getX(self, index):
         if(index>=self.size or index<0): return None
@@ -106,11 +152,11 @@ class Player:
 
     def getPixelX(self, index):
         if(index>=self.size or index<0): return None
-        return int(self.rect[index][1].x/self.width)
+        return int(round(self.rect[index][1].x/self.width))
     
     def getPixelY(self, index):
         if(index>=self.size or index<0): return None
-        return int(self.rect[index][1].y/self.height)
+        return int(round(self.rect[index][1].y/self.height))
     
     def getSize(self):
         return self.size
@@ -190,8 +236,8 @@ class Player:
 
 class Snake_Game:
     pixel_size = 20
-    SCR_WIDTH = 800
-    SCR_HEIGHT = 600
+    SCR_WIDTH = 200
+    SCR_HEIGHT = 200
     SCR_WIDTH_PIXEL = int(SCR_WIDTH/pixel_size)
     SCR_HEIGHT_PIXEL = int(SCR_HEIGHT/pixel_size)
 
@@ -214,40 +260,34 @@ class Snake_Game:
 
     def reset(self):
         self.plr.reset()
+        self.apple.reset()
         self.setup_state()
         return
     
     def getReward(self, mul=10):
-        reward = self.plr.getMoveCnt()*0.5+self.plr.getSize()*mul
-        if(self.plr.alive == False): reward-=100
+        reward = self.plr.getScore()
+        if(self.plr.alive == False): reward-=20
         return reward
-    
-    def getDist(self):
-        return np.sqrt((self.plr.getX(0)-self.apple.getX())*(self.plr.getX(0)-self.apple.getX())+(self.plr.getY(0)-self.apple.getY())*(self.plr.getY(0)-self.apple.getY()))
     
     def emulate(self, action):
         next_state = self.new_state()
         next_plr = Player(self.SCR_WIDTH, self.SCR_HEIGHT)
         next_plr.copyPlayer(self.plr)
-        next_apple = Apple(self.SCR_WIDTH_PIXEL, self.SCR_HEIGHT)
+        next_apple = Apple(self.SCR_WIDTH, self.SCR_HEIGHT)
         next_apple.copyApple(self.apple)
         next_plr.changeDir(action)
         next_plr.move()
         while(not next_plr.completeMovement()): next_plr.move()
         next_plr.grow(next_apple.collide(next_plr.getX(0), next_plr.getY(0)))
         next_body = next_plr.getBodyPixel()
+        next_apple_rect = next_apple.getPixelTuple()
         for e in next_body:
             next_state[e[1]][e[0]] = 1.0
+        next_state[next_apple_rect[1]][next_apple_rect[0]] = -1.0
         return next_state
 
     def getState(self):
-        list = []
-        for i in range(self.SCR_HEIGHT_PIXEL):
-            row = []
-            for j in range(self.SCR_WIDTH_PIXEL):
-                row.append(self.state[i][j])
-            list.append(row)
-        return list
+        return self.state
     
     def postAction(self, action):
         pygame.event.post(self.keys[action])
@@ -289,13 +329,12 @@ class Snake_Game:
         if(self.current_body != self.prev_body):
             if(self.prev_apple != None):
                 for e in self.prev_body:
-                    self.state[e[1]][e[0]] = -1.0
+                    self.state[e[1]][e[0]] = 0.0
             for e in self.current_body:
                 self.state[e[1]][e[0]] = 1.0
             self.prev_body = self.current_body
         if(self.current_apple != self.prev_apple):
-            if(self.prev_apple != None): self.state[self.prev_apple[1]][self.prev_apple[0]] = -1.0
-            self.state[self.current_apple[1]][self.current_apple[0]] = 1.0
+            self.state[self.current_apple[1]][self.current_apple[0]] = -1.0
             self.prev_apple = self.current_apple
         return
     
