@@ -1,41 +1,17 @@
 import pygame
-import numpy as np
-from environment import Snake_Game
-from agent import DQN
+from environment import Game
 
 pygame.init()
+
 clock = pygame.time.Clock()
+env = Game()
 
-run = True
-env = Snake_Game()
+env.set_display(2)
 
-def checkEvent():
-    for e in pygame.event.get():
-        if(e.type == pygame.QUIT):
-            global run
-            run = False
-        else:
-            env.checkEvent(e)
-    return
-
-def paint():
-    env.draw()
-    pygame.display.update()
-    return
-
-def update():
-    checkEvent()
+while(True):
+    if(env.plr.alive == False): break
+    env.check_event()
     env.update()
-    return
-
-def play():
-    while(True):
-        if(not run): break
-        if(env.plr.alive == False): break
-        update()
-        paint()
-        clock.tick(30)
-    return
-
-play()
+    env.draw()
+    clock.tick(30)
 pygame.quit()

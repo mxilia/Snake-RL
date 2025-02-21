@@ -1,61 +1,33 @@
 import pygame
-import numpy as np
-from environment import Snake_Game
-from agent import DQN
+from environment import Game
+from agent import Agent
 
 pygame.init()
-clock = pygame.time.Clock()
 
-run = True
-env = Snake_Game()
-agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL, env)
+env = Game()
+agent = Agent(env)
 
-def checkEvent():
-    for e in pygame.event.get():
-        if(e.type == pygame.QUIT):
-            global run
-            run = False
-        else:
-            env.checkEvent(e)
-    return
+checkpoint = 2000
 
-def paint():
-    env.draw()
-    pygame.display.update()
-    return
+for i in range(agent.episode):
+    print(f"Episode: {i}")
+    agent.set_current_state(env.get_state())
 
-def update():
-    checkEvent()
-    env.update()
-    return
-
-def play():
     while(True):
-        if(not run): break
         if(env.plr.alive == False): break
-        if(env.plr.completeMovement()):
-            if(agent.done == True): break
-            action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-            env.postAction(action)
-            agent.record(action, np.array(env.emulate(action)).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
+        if(env.plr.complete_movement()):
+            action = agent.pick_action(env.get_state())
+            agent.record(action, env.emulate(action))
             agent.replay()
-        update()
-        paint()
-    agent.replay()
-    return
+            env.post_action(action)
+        env.check_event()
+        env.update()
+        env.draw()
 
-def train_agent():
-    for i in range(agent.episode):
-        #print(i+1)
-        agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-        play()
-        if(not run): break
-        agent.reset()
-        env.reset()
-    return
+    agent.add_reward()
+    env.reset()
+    if((i+1)%checkpoint == 0):
+        agent.save_model(f"snake_ep_{i+1}")
+        agent.save_reward()
 
-while(True):
-    agent.get_model()
-    agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-    train_agent()
-    agent.save_model()
+

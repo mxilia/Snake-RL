@@ -1,50 +1,26 @@
 import pygame
-import numpy as np
-from environment import Snake_Game
-from agent import DQN
+from environment import Game
+from agent import Agent
 
 pygame.init()
+
 clock = pygame.time.Clock()
+env = Game()
+agent = Agent(env)
 
-run = True
-env = Snake_Game()
-agent = DQN(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL, env)
-
-def checkEvent():
-    for e in pygame.event.get():
-        if(e.type == pygame.QUIT):
-            global run
-            run = False
-        else:
-            env.checkEvent(e)
-    return
-
-def paint():
-    env.draw()
-    pygame.display.update()
-    return
-
-def update():
-    checkEvent()
-    env.update()
-    return
-
-def play():
-    while(True):
-        if(not run): break
-        if(env.plr.alive == False): break
-        if(env.plr.completeMovement()):
-            if(agent.done == True): break
-            action = agent.pick_action(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
-            env.postAction(action)
-        update()
-        paint()
-        clock.tick(60)
-    agent.replay()
-    return
-
-agent.get_model()
-agent.setCurrentState(np.array(env.getState()).reshape(env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL,))
+env.set_display(2)
+agent.get_model("snake_ep_18000", False)
+agent.set_current_state(env.get_state())
 agent.epsilon = 0.0
-play()
+
+while(True):
+    if(env.plr.alive == False): break
+    if(env.plr.complete_movement()):
+        action = agent.pick_action(env.get_state())
+        env.post_action(action)
+    env.check_event()
+    env.update()
+    env.draw()
+    clock.tick(60)
+    
 pygame.quit()
