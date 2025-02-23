@@ -1,5 +1,6 @@
 from collections import deque
 import numpy as np
+import os
 
 class Queue:
 
@@ -40,3 +41,17 @@ class Queue:
     
 def calculate_dist(a, b):
     return np.sqrt(np.square(a[0]-b[0])+np.square(a[1]-b[1]))
+
+def create_directory(directory_name):
+    try:
+        os.mkdir(directory_name)
+        print(f"Create {directory_name} successfully.")
+    except FileExistsError:
+        print(f"{directory_name} existed.")
+        return
+    except PermissionError:
+        print(f"Creating {directory_name} denied.")
+        return
+    except Exception as e:
+        print(f"Creating {directory_name} error.")
+        return

@@ -232,7 +232,6 @@ class Game:
         self.state = []
         self.prev_body = []
         self.prev_dist = 1000000
-        self.state = self.get_state()
         self.display = 1
         return
     
@@ -250,7 +249,6 @@ class Game:
     def reset(self):
         self.plr.reset()
         self.apple.reset()
-        self.state = self.get_state()
         return
     
     def get_reward(self):
@@ -282,12 +280,13 @@ class Game:
         current_apple = (apple.get_pixelX(), apple.get_pixelY())
         state = [[0.0 for j in range(self.SCR_WIDTH_PIXEL)] for i in range(self.SCR_HEIGHT_PIXEL)]
         if(self.plr.alive == False): return state
-        state[current_body[0][1]][current_body[0][0]] = 1.0
+        state[current_apple[1]][current_apple[0]] = 3.0
+        head = current_body[0]
+        if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]][head[0]] = 1.0
         for i in range(1, len(current_body)):
             e = current_body[i]
             if(e[0]<0 or e[0]>=self.SCR_WIDTH_PIXEL  or e[1]<0 or e[1]>=self.SCR_HEIGHT_PIXEL): continue
             state[e[1]][e[0]] = 2.0
-        state[current_apple[1]][current_apple[0]] = 3.0
         return state
     
     def post_action(self, action):
@@ -320,7 +319,6 @@ class Game:
         self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
         self.plr.move()
         self.apple.generate(self.plr.get_body_pixel())
-        self.state = self.get_state()
         return
     
     def draw(self):
