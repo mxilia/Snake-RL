@@ -6,30 +6,25 @@ from agent import DQN
 pygame.init()
 
 env = Game()
-input_dim = env.SCR_WIDTH_PIXEL*env.SCR_HEIGHT_PIXEL
-output_dim = len(env.keys)
+input_dim = env.INPUT_SHAPE
+output_dim = env.OUTPUT_SHAPE
 
 agent = DQN(input_dim, output_dim, "normal_dqn")
-checkpoint = 2000
+checkpoint = 10000
 
 for i in range(agent.num_episode):
     state = torch.tensor(env.get_state()).reshape(input_dim)
     while(True):
-        if(env.plr.alive == False): break
-        if(env.plr.complete_movement()):
-            action = agent.pick_action(state)
-            env.post_action(action)
-            next_state = torch.tensor(env.emulate(action)).reshape(input_dim)
+        action = agent.pick_action(state)
+        next_state, total_reward, done = env.step(action)
+        next_state = torch.tensor(next_state).reshape(input_dim)
 
-            agent.add_memory(state, action, env.get_reward(), next_state, not env.plr.alive)
-            agent.replay()
-            agent.update_values()
+        agent.add_memory(state, action, total_reward, next_state, done)
+        agent.replay()
+        agent.update_values()
 
-            state = next_state
-
-        env.check_event()
-        env.update()
-        env.draw()
+        state = next_state
+        if(done == True): break
 
     print(f"ep {i+1}: {env.get_reward()}")
     agent.add_reward(env.get_reward())

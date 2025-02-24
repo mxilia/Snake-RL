@@ -149,7 +149,7 @@ class Player:
         mul_time=0.01
         if(self.alive == True):
             self.score = (self.size-1)*mul_size
-            self.score+=self.survival_time*mul_time
+            self.score-=self.survival_time*mul_time
         return self.score
     
     def copy(self, target):
@@ -233,6 +233,7 @@ class Game:
         self.prev_body = []
         self.prev_dist = 1000000
         self.display = 1
+        self.clock = pygame.time.Clock()
         return
     
     def set_config(self, config):
@@ -241,6 +242,8 @@ class Game:
         self.SCR_WIDTH_PIXEL = config.SCR_HEIGHT_PIXEL
         self.SCR_HEIGHT_PIXEL = config.SCR_HEIGHT_PIXEL
         self.PIXEL_SIZE = config.PIXEL_SIZE
+        self.INPUT_SHAPE = (self.SCR_WIDTH_PIXEL+2)*(self.SCR_HEIGHT_PIXEL+2)
+        self.OUTPUT_SHAPE = len(self.keys)
 
     def set_display(self, display):
         self.display = display
@@ -261,37 +264,35 @@ class Game:
         if(self.plr.alive == False): reward-=20
         return reward
 
-    def emulate(self, action):
-        next_plr = Player(self.config)
-        next_apple = Apple(self.config)
-        next_plr.copy(self.plr)
-        next_apple.copy(self.apple)
-        next_plr.change_dir(action)
-        next_plr.move()
-        while(not next_plr.complete_movement()): next_plr.move()
-        next_plr.grow(next_apple.collide(next_plr.getX(0), next_plr.getY(0)))
-        next_apple.generate(next_plr.get_body_pixel())
-        return self.get_state(next_plr, next_apple)
+    def step(self, action, fps=0):
+        pygame.event.post(self.keys[action])
+        self.check_event()
+        self.update()
+        self.draw()
+        while(not self.plr.complete_movement()):
+            self.update()
+            self.draw()
+            if(fps>0): self.clock.tick(fps)
+        return self.get_state(), self.get_reward(), not self.plr.alive
     
     def get_state(self, plr=None, apple=None):
         if(plr == None): plr=self.plr
         if(apple == None): apple=self.apple
         current_body = plr.get_body_pixel()
         current_apple = (apple.get_pixelX(), apple.get_pixelY())
-        state = [[0.0 for j in range(self.SCR_WIDTH_PIXEL)] for i in range(self.SCR_HEIGHT_PIXEL)]
+        state = [[1.0 if j == 0 or i == 0 or j == self.SCR_WIDTH_PIXEL+1 or i == self.SCR_HEIGHT_PIXEL+1 else 0.0 for j in range(self.SCR_WIDTH_PIXEL+2)] for i in range(self.SCR_HEIGHT_PIXEL+2)]
         if(self.plr.alive == False): return state
-        state[current_apple[1]][current_apple[0]] = 3.0
+        offset = 1
+        state[current_apple[1]+offset][current_apple[0]+offset] = 2.0
         head = current_body[0]
-        if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]][head[0]] = 1.0
-        for i in range(1, len(current_body)):
+        tail = current_body[plr.size-1]
+        if(tail[0]>=0 and tail[0]<self.SCR_WIDTH_PIXEL and tail[1]>=0 or tail[1]<self.SCR_HEIGHT_PIXEL): state[tail[1]+offset][tail[0]+offset] = -2.0
+        if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]+offset][head[0]+offset] = 1.0
+        for i in range(1, len(current_body)-1):
             e = current_body[i]
             if(e[0]<0 or e[0]>=self.SCR_WIDTH_PIXEL  or e[1]<0 or e[1]>=self.SCR_HEIGHT_PIXEL): continue
-            state[e[1]][e[0]] = 2.0
+            state[e[1]+offset][e[0]+offset] = -1.0
         return state
-    
-    def post_action(self, action):
-        pygame.event.post(self.keys[action])
-        return
 
     def check_event(self):
         for e in pygame.event.get():
@@ -328,15 +329,17 @@ class Game:
             self.apple.draw(self.screen)
             self.plr.draw(self.screen)
         elif(self.display == 2):
-            for i in range(self.SCR_HEIGHT_PIXEL):
-                for j in range(self.SCR_WIDTH_PIXEL):
+            state = self.get_state()
+            for i in range(1, self.SCR_HEIGHT_PIXEL+1):
+                for j in range(1, self.SCR_WIDTH_PIXEL+1):
                     Color = None
-                    c_pix = int(self.state[i][j])
-                    if(c_pix == 1): Color = (210, 200, 10)
-                    elif(c_pix == 2): Color = (25, 200, 10)
-                    elif(c_pix == 3): Color = (250, 20, 10)
+                    c_pix = int(state[i][j])
+                    if(c_pix == -1): Color = (255, 255, 255)
+                    elif(c_pix == -2): Color = (210, 200, 10)
+                    elif(c_pix == 1): Color = (25, 200, 10)
+                    elif(c_pix == 2): Color = (250, 20, 10)
                     else: continue
                     pygame.draw.rect(self.screen, Color, 
-                    pygame.Rect((j*self.PIXEL_SIZE, i*self.PIXEL_SIZE, self.PIXEL_SIZE, self.PIXEL_SIZE)))
+                    pygame.Rect(((j-1)*self.PIXEL_SIZE, (i-1)*self.PIXEL_SIZE, self.PIXEL_SIZE, self.PIXEL_SIZE)))
         pygame.display.update()
         

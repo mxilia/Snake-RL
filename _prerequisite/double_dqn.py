@@ -78,9 +78,12 @@ for i in range(num_episode):
             reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
             next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
             done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
+            
             with torch.no_grad():
+                next_state_best_action = torch.argmax(online_network(next_state_pt), dim=1, keepdim=True)
                 current_q = target_network(state_pt)
-                target_q = reward_pt+discount*torch.max(target_network(next_state_pt), dim=1)[0]*(1-done_pt)
+                next_best_target_q = target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
+                target_q = reward_pt+discount*next_best_target_q*(1-done_pt)
                 current_q[torch.arange(batch_size), action_pt] = target_q
             online_network.fit(state_pt, current_q, loss_func, optimizer)
 

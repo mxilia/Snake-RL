@@ -26,3 +26,7 @@ class NeuralNetWork(nn.Module):
         loss.backward()
         optimizer.step()
         return loss.item()
+    
+    def soft_update(self, goal_net, tau=0.005):
+        for self_param, goal_param in zip(self.parameters(), goal_net.parameters()):
+            self_param.data.copy_((1.0-tau)*self_param.data+tau*goal_param.data)
