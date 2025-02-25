@@ -95,7 +95,6 @@ class Player:
         self.collision = True
         self.size = 1
         self.score = 0
-        self.survival_time = 0
         self.default_key = 3
         self.rect = []
         self.rect.append([self.default_key, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
@@ -114,7 +113,6 @@ class Player:
         self.alive = True
         self.size = 1
         self.score = 0
-        self.survival_time = 0
         self.rect.clear()
         self.rect.append([self.default_key, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
     
@@ -143,14 +141,6 @@ class Player:
     def get_dir(self, index):
         if(index>=self.size or index<0): return None
         return self.rect[index][0]
-    
-    def get_score(self):
-        mul_size=10
-        mul_time=0.01
-        if(self.alive == True):
-            self.score = (self.size-1)*mul_size
-            self.score-=self.survival_time*mul_time
-        return self.score
     
     def copy(self, target):
         self.rect.clear()
@@ -199,7 +189,6 @@ class Player:
             dy = self.dir[rect[0]][1]*self.speed
             rect[1].move_ip(dx, dy)
         if(self.complete_movement()):
-            self.survival_time+=1
             for i in range(self.size-1, 0, -1):
                 self.rect[i][0] = self.rect[i-1][0]
         return
@@ -229,9 +218,8 @@ class Game:
         self.plr = Player(self.config)
         self.apple = Apple(self.config)
         self.key_order = util.Queue()
-        self.state = []
-        self.prev_body = []
         self.prev_dist = 1000000
+        self.prev_plr_size = 1
         self.display = 1
         self.clock = pygame.time.Clock()
         return
@@ -252,16 +240,22 @@ class Game:
     def reset(self):
         self.plr.reset()
         self.apple.reset()
+        self.prev_plr_size = 1
+        self.prev_dist = 1000000
         return
     
     def get_reward(self):
-        reward = self.plr.get_score()
         plr_tuple = (self.plr.get_pixelX(0), self.plr.get_pixelY(0))
         apple_tuple = (self.apple.get_pixelX(), self.apple.get_pixelY())
         current_dist = util.calculate_dist(plr_tuple, apple_tuple)
+        reward = 0
+        if(self.plr.size>self.prev_plr_size): reward+=10
+        self.prev_plr_size=self.plr.size
+        if(self.plr.complete_movement()): reward-=0.05
         if(current_dist>self.prev_dist): reward-=0.5
         elif(current_dist<self.prev_dist): reward+=0.5
         if(self.plr.alive == False): reward-=20
+        self.prev_dist = current_dist
         return reward
 
     def step(self, action, fps=0):

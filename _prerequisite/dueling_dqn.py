@@ -7,21 +7,28 @@ from collections import deque
 import matplotlib.pyplot as plt
 import numpy as np
 
-class NeuralNetWork(nn.Module):
+class DuelingNetWork(nn.Module):
 
     def __init__(self, input_dim, output_dim):
         super().__init__()
         self.fc1 = nn.Linear(input_dim, 64)
         self.fc2 = nn.Linear(64, 64)
         self.fc3 = nn.Linear(64, 64)
-        self.fc4 = nn.Linear(64, output_dim)
+        self.fc_value = nn.Linear(64, 32)
+        self.fc_advantage = nn.Linear(64, 32)
+        self.value = nn.Linear(32, 1)
+        self.advantage = nn.Linear(32, output_dim)
 
     def forward(self, x):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
-        x = self.fc4(x)
-        return x
+        V = torch.relu(self.fc_value(x))
+        A = torch.relu(self.fc_advantage(x))
+        V = self.value(V)
+        A = self.advantage(A)
+        Q = V + A - torch.mean(A, dim=-1, keepdim=True)
+        return Q
     
     def fit(self, x, y_true, loss_func, optimizer):
         optimizer.zero_grad()
@@ -52,8 +59,8 @@ time = 0
 memory = deque(maxlen=memory_size)
 reward_hist = []
 
-online_network = NeuralNetWork(input_dim, output_dim)
-target_network = NeuralNetWork(input_dim, output_dim)
+online_network = DuelingNetWork(input_dim, output_dim)
+target_network = DuelingNetWork(input_dim, output_dim)
 optimizer = optim.Adam(online_network.parameters(), lr=learning_rate)
 loss_func = nn.MSELoss()
 
@@ -78,12 +85,9 @@ for i in range(num_episode):
             reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
             next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
             done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
-            
             with torch.no_grad():
-                next_state_best_action = torch.argmax(online_network(next_state_pt), dim=1, keepdim=True)
                 current_q = target_network(state_pt)
-                next_best_target_q = target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
-                target_q = reward_pt+discount*next_best_target_q*(1-done_pt)
+                target_q = reward_pt+discount*torch.max(target_network(next_state_pt), dim=1)[0]*(1-done_pt)
                 current_q[torch.arange(batch_size), action_pt] = target_q
             online_network.fit(state_pt, current_q, loss_func, optimizer)
 

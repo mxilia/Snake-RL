@@ -5,12 +5,15 @@ pygame.init()
 
 clock = pygame.time.Clock()
 env = Game()
+total_reward = 0
 
 while(True):
-    if(env.plr.complete_movement()): print(env.get_reward())
-    if(env.plr.alive == False): break
     env.check_event()
     env.update()
     env.draw()
-    clock.tick(60)
+    if(env.plr.complete_movement()):
+        total_reward+=env.get_reward()
+        print(total_reward)
+    if(env.plr.alive == False): break
+    clock.tick(20)
 pygame.quit()
