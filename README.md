@@ -1,4 +1,2 @@
 # Deep Q-Learning Snake
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent vulputate vitae augue vitae malesuada. Nullam vel lacinia libero. Ut egestas nisi sit amet fermentum auctor. Vivamus quis tempor massa. Vivamus viverra justo at enim interdum, nec mattis ante rhoncus. Fusce sit amet dapibus velit, a ornare lectus. In bibendum mauris ac tortor molestie fringilla. Nunc facilisis, enim nec ultricies feugiat, mi turpis pretium neque, in consequat orci orci eu lorem. Suspendisse eget aliquam erat. Donec ultricies tellus massa, vitae cursus neque iaculis vitae.
-
-Sed elementum quam dolor, nec sollicitudin eros consectetur nec. Aliquam erat volutpat. Ut id tempus tellus. Nullam placerat dui nec lectus faucibus, vel commodo augue egestas. Duis at lobortis dui, at commodo ex. Suspendisse eros tortor, placerat lacinia ante ac, tempor tempor sapien. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. In volutpat commodo eleifend. Quisque vulputate luctus velit ac dapibus. Ut in tempus purus, in varius odio.
+not finished yet
