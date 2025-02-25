@@ -1,1 +1,2 @@
-Snake game AI using DQN to achieve maximum size.
+### Deep Q-Learning Snake
+still doing
