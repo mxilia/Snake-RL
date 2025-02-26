@@ -1,23 +1,27 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-model_directory = "./double_dueling_dqn"
+def get_avg(array):
+    avg_list = []
+    sum = 0.0; cnt = 0.0
+    for e in array:
+        sum+=float(e); cnt+=1.0
+        avg_list.append(sum/cnt)
+    return avg_list
+
+model_directory = "./dueling_ddqn"
 reward_file = f"{model_directory}/reward_hist.txt"
 reward = list(np.loadtxt(reward_file, delimiter=" ", dtype=float))
-list_plot = []
-mode="mean"
+fig, axes = plt.subplots(1, 2, figsize=(10,4), dpi=100)
 
-if(mode=="mean"):
-    sum = 0.0
-    cnt = 0.0
-    for e in reward:
-        sum+=float(e)
-        cnt+=1.0
-        list_plot.append(sum/cnt)
-elif(mode=="raw"): list_plot=reward
+axes[0].plot(reward)
+axes[0].set_title = "Episode Reward"
+axes[0].set_xlabel('Episode')
+axes[0].set_ylabel('Reward')
 
-plt.figure(figsize=(6,4), dpi=100)
-plt.plot(list_plot)
-plt.xlabel('Episode')
-plt.ylabel('Reward')
+axes[1].plot(get_avg(reward))
+axes[1].set_title = "Avg Reward"
+axes[1].set_xlabel('Episode')
+axes[1].set_ylabel('Avg Reward')
+
 plt.show()

@@ -14,12 +14,12 @@ agent = Agent(input_dim, output_dim)
 
 agent.get_model("snake_ep_90000", False)
 agent.epsilon = 0.0
-state = torch.tensor(env.get_state()).reshape(input_dim)
+state = torch.tensor(env.get_frames().clone()).reshape(input_dim)
 
 while(True):
     action = agent.pick_action(state)
     next_state, total_reward, done = env.step(action, fps=60)
-    next_state = torch.tensor(next_state).reshape(input_dim)
+    next_state = torch.tensor(next_state.clone()).reshape(input_dim)
     state = next_state
     if(done == True): break
 pygame.quit()

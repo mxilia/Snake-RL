@@ -13,12 +13,12 @@ agent = Agent(input_dim, output_dim)
 checkpoint = 10000
 
 for i in range(agent.num_episode):
-    state = torch.tensor(env.get_frames()).reshape(input_dim)
+    state = torch.tensor(env.get_frames().clone()).reshape(input_dim)
     total_reward = 0
     while(True):
         action = agent.pick_action(state.unsqueeze(0))
         next_state, reward, done = env.step(action)
-        next_state = torch.tensor(next_state).reshape(input_dim)
+        next_state = torch.tensor(next_state.clone()).reshape(input_dim)
         total_reward+=reward
 
         agent.add_memory(state, action, total_reward, next_state, done)

@@ -1,313 +1,158 @@
-
-import pygame
-import random
 import torch
-import numpy as np
+import torch.nn as nn
+import torch.optim as optim
 from collections import deque
+import numpy as np
+import random
 
-import utility as util
+import utility as util 
+from neural_network import ConvoNN
+from neural_network import DuelingNetWork
 
-
-class Game_Config:
-    SCR_ROW = 10
-    SCR_COLUMN = 10
-    PIXEL_SIZE = 20
-    SCR_WIDTH = SCR_COLUMN*PIXEL_SIZE
-    SCR_HEIGHT = SCR_ROW*PIXEL_SIZE
-    SCR_WIDTH_PIXEL = int(SCR_WIDTH/PIXEL_SIZE)
-    SCR_HEIGHT_PIXEL = int(SCR_HEIGHT/PIXEL_SIZE)
-
-    def __init__(self):
-        pass
-
-class Apple:
-    scale = (1, 1)
-    color = (255, 0, 0)
+class DQN:
     
-    def __init__(self, config):
-        self.set_config(config)
-        self.onScreen = False
-        self.ava_pos = {}
-        self.generate([])
+    def __init__(self, input_dim, output_dim, model_name="normal_dqn"):
+        self.model_directory = f"./{model_name}"
+        util.create_directory(self.model_directory)
 
-    def set_config(self, config):
-        self.width = self.scale[0]*config.PIXEL_SIZE
-        self.height = self.scale[1]*config.PIXEL_SIZE
-        self.SCR_WIDTH = config.SCR_WIDTH
-        self.SCR_HEIGHT = config.SCR_HEIGHT
-        self.SCR_WIDTH_PIXEL = config.SCR_HEIGHT_PIXEL
-        self.SCR_HEIGHT_PIXEL = config.SCR_HEIGHT_PIXEL
+        self.num_episode = 100000
 
-    def reset(self):
-        self.onScreen = False
-        self.generate([])
-        return
+        self.epsilon = 1.0
+        self.epsilon_decay = 0.999999
+        self.epsilon_min = 0.02
 
-    def getX(self):
-        return self.rect.x
-    
-    def getY(self):
-        return self.rect.y
+        self.discount = 0.99
+        self.learning_rate = 0.0001
 
-    def get_pixelX(self):
-        return int(round(self.getX()/self.width))
-    
-    def get_pixelY(self):
-        return int(round(self.getY()/self.height))
+        self.batch_size = 32
+        self.memory_size = 200000
+        self.target_net_update_int = 500
+        self.time = 0
 
-    def generate(self, occupied):
-        if(self.onScreen): return
-        self.onScreen = True
-        self.ava_pos.clear()
-        for rect in occupied:
-            self.ava_pos[str(rect[0]) + " " + str(rect[1])] = True
-        if(len(occupied) == self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL): 
-            self.rect = None
-            return
-        x = random.randint(0, self.SCR_WIDTH_PIXEL-1)
-        y = random.randint(0, self.SCR_HEIGHT_PIXEL-1)
-        key = str(x) + " " + str(y)
-        while(key in self.ava_pos):
-            x = random.randint(0, self.SCR_WIDTH_PIXEL-1)
-            y = random.randint(0, self.SCR_HEIGHT_PIXEL-1)
-            key = str(x) + " " + str(y)
-        self.rect = pygame.Rect((x*self.width, y*self.height, self.width, self.height))
+        self.memory = deque(maxlen=self.memory_size)
+        self.reward_hist = []
 
-    def collide(self, x, y):
-        if(self.rect.x == x and self.rect.y == y):
-            self.onScreen = False
-            return True
-        return False
+        self.input_dim = input_dim
+        self.output_dim = output_dim
+        self.online_network = ConvoNN(input_dim, output_dim)
+        self.target_network = ConvoNN(input_dim, output_dim)
+        self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
+        self.loss_func = nn.MSELoss()
 
-    def draw(self, screen):
-        if(self.rect == None): return
-        pygame.draw.rect(screen, self.color, self.rect)
-
-
-class Player:
-    speed = 4
-    scale = (1, 1)
-    color = (20, 190, 20)
-    dir = [(0, -1), (-1, 0), (0, 1), (1, 0)]
-
-    def __init__(self, config):
-        self.set_config(config)
-        self.alive = True
-        self.collision = True
-        self.size = 1
-        self.score = 0
-        self.default_key = 3
-        self.current_dir = self.default_key
-        self.rect = []
-        self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
-
-    def set_config(self, config):
-        self.width = self.scale[0]*config.PIXEL_SIZE
-        self.height = self.scale[1]*config.PIXEL_SIZE
-        self.SCR_WIDTH = config.SCR_WIDTH
-        self.SCR_HEIGHT = config.SCR_HEIGHT
-        self.SCR_WIDTH_PIXEL = config.SCR_HEIGHT_PIXEL
-        self.SCR_HEIGHT_PIXEL = config.SCR_HEIGHT_PIXEL
-        self.origin_x = int(round(self.SCR_WIDTH_PIXEL/2))*config.PIXEL_SIZE
-        self.origin_y = int(round(self.SCR_HEIGHT_PIXEL/2))*config.PIXEL_SIZE
-
-    def reset(self):
-        self.alive = True
-        self.size = 1
-        self.score = 0
-        self.current_dir = self.default_key
-        self.rect.clear()
-        self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
-    
-    def getX(self, index):
-        if(index>=self.size or index<0): return None
-        return self.rect[index][1].x
-    
-    def getY(self, index):
-        if(index>=self.size or index<0): return None
-        return self.rect[index][1].y
-
-    def get_pixelX(self, index):
-        return int(round(self.getX(index)/self.width))
-    
-    def get_pixelY(self, index):
-        return int(round(self.getY(index)/self.height))
-    
-    def get_body_pixel(self):
-        return [(self.get_pixelX(i), self.get_pixelY(i)) for i in range(self.size)]
-    
-    def complete_movement(self):
-        if(self.alive == False): return True
-        if(self.rect[0][1].x%self.width or self.rect[0][1].y%self.height): return False
-        return True
-
-    def collide(self, pixelX, pixelY):
-        if(self.alive == False): return
-        if(self.collision == False): return False
-        body = self.get_body_pixel()
-        for e in body: 
-            if(e[0]==self.get_pixelX(0)+pixelX and e[1]==self.get_pixelY(0)+pixelY): return True
-        return False
-    
-    def change_dir(self, key):
-        if(self.alive == False): return
-        if(not self.complete_movement()): return False
-        self.current_dir = key
-        return True
-
-    def move(self):
-        if(self.alive == False): return
-        if(self.complete_movement()):
-            for i in range(self.size-1, 0, -1):
-                self.rect[i][0] = self.rect[i-1][0]
-            self.rect[0][0] = self.current_dir
-        dx = self.dir[self.rect[0][0]][0]*self.speed
-        dy = self.dir[self.rect[0][0]][1]*self.speed
-        if(self.collision == True):
-            if(self.rect[0][1].x+dx<0 or self.rect[0][1].x+self.width+dx>self.SCR_WIDTH or self.rect[0][1].y+dy<0 or self.rect[0][1].y+self.height+dy>self.SCR_HEIGHT):
-                self.alive = False
-                return
-            px = self.rect[0][1].x+dx+self.width/2-((self.rect[0][1].x+dx+self.width/2)%self.width)
-            py = self.rect[0][1].y+dy+self.height/2-((self.rect[0][1].y+dy+self.height/2)%self.height)
-            for i in range(1, self.size, 1):
-                x = self.rect[i][1].x+self.width/2-((self.rect[i][1].x+self.width/2)%self.width)
-                y = self.rect[i][1].y+self.height/2-((self.rect[i][1].y+self.height/2)%self.height)
-                if(px == x and py == y):
-                    self.alive = False
-                    return
-        
-        for rect in self.rect:
-            dx = self.dir[rect[0]][0]*self.speed
-            dy = self.dir[rect[0]][1]*self.speed
-            rect[1].move_ip(dx, dy)
+    def get_model(self, model_name, train):
+        self.online_network = torch.load(f"{self.model_directory}/{model_name}_o.pt", weights_only=False)
+        self.target_network = torch.load(f"{self.model_directory}/{model_name}_t.pt", weights_only=False)
+        if(train): self.online_network.train()
+        else: self.online_network.eval()
+        self.target_network.eval()
         return
     
-    def grow(self, eaten):
-        if(self.alive == False): return False
-        if(not eaten): return False
-        self.rect.append([self.rect[self.size-1][0], pygame.Rect((self.rect[self.size-1][1].x-self.dir[self.rect[self.size-1][0]][0]*self.width, self.rect[self.size-1][1].y-self.dir[self.rect[self.size-1][0]][1]*self.height, self.width, self.height))])
-        self.size+=1
-        return True
-
-    def draw(self, screen):
-        for e in self.rect:
-            pygame.draw.rect(screen, self.color, e[1])
-
-class Game:
-    key_W = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_w)
-    key_A = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_a)
-    key_S = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_s)
-    key_D = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_d)
-    keys = [key_W, key_A, key_S, key_D]
-    
-    def __init__(self):
-        self.config = Game_Config()
-        self.set_config(self.config)
-        self.screen = pygame.display.set_mode((self.SCR_WIDTH, self.SCR_HEIGHT))
-        self.plr = Player(self.config)
-        self.apple = Apple(self.config)
-        self.key_order = util.Queue()
-        self.prev_dist = 1000000
-        self.prev_plr_size = 1
-        self.display = 1
-        self.clock = pygame.time.Clock()
-        self.frames_stack = 4
-        self.frames = deque([self.screenshot() for i in range(self.frames_stack)], maxlen=self.frames_stack)
-        self.INPUT_SHAPE = self.get_frames().shape
-        self.OUTPUT_SHAPE = len(self.keys)
+    def save_model(self, model_name):
+        torch.save(self.online_network, f"{self.model_directory}/{model_name}_o.pt")
+        torch.save(self.target_network, f"{self.model_directory}/{model_name}_t.pt")
+        print(f"Saved {model_name} successfully.")
         return
     
-    def set_config(self, config):
-        self.SCR_WIDTH = config.SCR_WIDTH
-        self.SCR_HEIGHT = config.SCR_HEIGHT
-        self.SCR_WIDTH_PIXEL = config.SCR_HEIGHT_PIXEL
-        self.SCR_HEIGHT_PIXEL = config.SCR_HEIGHT_PIXEL
-        self.PIXEL_SIZE = config.PIXEL_SIZE
-
-    def set_display(self, display):
-        self.display = display
-        return
-
-    def reset(self):
-        self.plr.reset()
-        self.apple.reset()
-        self.prev_plr_size = 1
-        self.prev_dist = 1000000
-        self.frames.clear()
-        for i in range(self.frames_stack): self.frames.append(self.screenshot())
+    def save_reward(self):
+        np.savetxt(f"{self.model_directory}/reward_hist.txt", np.array(self.reward_hist), fmt="%s", delimiter=' ')
         return
     
-    def get_reward(self):
-        reward = 0
-        plr_tuple = (self.plr.get_pixelX(0), self.plr.get_pixelY(0))
-        apple_tuple = (self.apple.get_pixelX(), self.apple.get_pixelY())
-        current_dist = util.calculate_dist(plr_tuple, apple_tuple)
-        if(self.plr.size>self.prev_plr_size): reward+=10
-        self.prev_plr_size=self.plr.size
-        if(self.plr.complete_movement()): reward-=0.05
-        if(current_dist>self.prev_dist): reward-=0.5
-        elif(current_dist<self.prev_dist): reward+=0.5
-        if(self.plr.alive == False): reward-=20
-        self.prev_dist = current_dist
-        return reward
-
-    def step(self, action, fps=0):
-        pygame.event.post(self.keys[action])
-        self.check_event()
-        self.update()
-        self.draw()
-        while(not self.plr.complete_movement()):
-            self.update()
-            self.draw()
-            if(fps>0): self.clock.tick(fps)
-        return self.get_frames(), self.get_reward(), not self.plr.alive
-    
-    def get_frames(self):
-        return torch.from_numpy(np.array(self.frames))
-    
-    def screenshot(self):
-        grey_scale_grid = torch.zeros((self.SCR_HEIGHT_PIXEL, self.SCR_WIDTH_PIXEL))
-        if(self.plr.alive == False): return grey_scale_grid
-        snake_body = self.plr.get_body_pixel()
-        apple_body = (self.apple.get_pixelX(), self.apple.get_pixelY())
-        for j, i in snake_body:
-            if(j<0 or j>=self.SCR_WIDTH_PIXEL or i<0 or i>=self.SCR_HEIGHT_PIXEL): continue
-            grey_scale_grid[i, j] = 0.299*self.plr.color[0]+0.587*self.plr.color[1]+0.114*self.plr.color[2]
-        grey_scale_grid[apple_body[1], apple_body[0]] = 0.299*self.apple.color[0]+0.587*self.apple.color[1]+0.114*self.apple.color[2]
-        return grey_scale_grid
-
-    def check_event(self):
-        for e in pygame.event.get():
-            if(e.type == pygame.QUIT):
-                pygame.quit()
-                exit(0)
-            elif(e.type == pygame.KEYDOWN):
-                current_key = -1
-                if(self.key_order.empty()): current_key = self.plr.rect[0][0]
-                else: current_key = self.key_order.rear()
-                if(e.key == pygame.K_w and current_key%2 != 0):
-                    self.key_order.push(0)
-                if(e.key == pygame.K_a and current_key%2 != 1):
-                    self.key_order.push(1)
-                if(e.key == pygame.K_s and current_key%2 != 0):
-                    self.key_order.push(2)
-                if(e.key == pygame.K_d and current_key%2 != 1):
-                    self.key_order.push(3)
+    def add_reward(self, reward):
+        self.reward_hist.append(reward)
         return
     
-    def update(self):
-        if(self.plr.alive == False): return
-        if(not self.key_order.empty() and self.plr.change_dir(self.key_order.front())): self.key_order.pop()
-        self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
-        self.plr.move()
-        self.apple.generate(self.plr.get_body_pixel())
-        if(self.plr.complete_movement()): self.frames.append(self.screenshot())
+    def add_memory(self, state, action, reward, next_state, done):
+        self.memory.append([state, action, reward, next_state, done]) # s, a, r, s+1, d
         return
+
+    @torch.no_grad
+    def pick_action(self, state):
+        output = self.online_network(state)
+        optimal_action = torch.argmax(output[0]).item()
+        random_action = int(np.random.randint(0, self.output_dim))
+        action = np.random.choice([optimal_action, random_action], p=[1.0-self.epsilon, self.epsilon])
+        return action
     
-    def draw(self):
-        if(self.display == 0): return
-        self.screen.fill((0, 0, 0))
-        if(self.display == 1):
-            self.apple.draw(self.screen)
-            self.plr.draw(self.screen)
-        pygame.display.update()
+    def replay(self):
+        if(len(self.memory)<self.batch_size): return
+        batch = np.array(random.sample(self.memory, self.batch_size), dtype=object)
+        state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
+        action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
+        reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
+        next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
+        done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
+        with torch.no_grad():
+            current_q = self.target_network(state_pt)
+            target_q = reward_pt+self.discount*torch.max(self.target_network(next_state_pt), dim=1)[0]*(1-done_pt)
+            current_q[torch.arange(self.batch_size), action_pt] = target_q
+        self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+
+    def update_values(self):
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        if(self.time == 0): self.target_network.load_state_dict(self.online_network.state_dict())
+        self.time = (self.time+1)%self.target_net_update_int
+
+class DoubleDQN(DQN):
+    
+    def __init__(self, input_dim, output_dim, model_name="double_dqn"):
+        super().__init__(input_dim, output_dim, model_name)
+
+    def replay(self):
+        if(len(self.memory)<self.batch_size): return
+        batch = np.array(random.sample(self.memory, self.batch_size), dtype=object)
+        state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
+        action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
+        reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
+        next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
+        done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
+        with torch.no_grad():
+            next_state_best_action = torch.argmax(self.online_network(next_state_pt), dim=1, keepdim=True)
+            current_q = self.target_network(state_pt)
+            next_best_target_q = self.target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
+            target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
+            current_q[torch.arange(self.batch_size), action_pt] = target_q
+        self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+
+    def update_values(self):
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        self.target_network.soft_update(self.online_network)
+
+class DuelingDQN(DQN):
+    
+    def __init__(self, input_dim, output_dim, model_name="dueling_dqn"):
+        super().__init__(input_dim, output_dim, model_name)
+        self.online_network = DuelingNetWork(input_dim, output_dim)
+        self.target_network = DuelingNetWork(input_dim, output_dim)
+        self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
+
+    def update_values(self):
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        self.target_network.soft_update(self.online_network)
+
+class DuelingDoubleDQN(DQN):
+     
+    def __init__(self, input_dim, output_dim, model_name="double_ddqn"):
+        super().__init__(input_dim, output_dim, model_name)
+        self.online_network = DuelingNetWork(input_dim, output_dim)
+        self.target_network = DuelingNetWork(input_dim, output_dim)
+        self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
+    
+    def replay(self):
+        if(len(self.memory)<self.batch_size): return
+        batch = np.array(random.sample(self.memory, self.batch_size), dtype=object)
+        state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
+        action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
+        reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
+        next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
+        done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
+        with torch.no_grad():
+            next_state_best_action = torch.argmax(self.online_network(next_state_pt), dim=1, keepdim=True)
+            current_q = self.target_network(state_pt)
+            next_best_target_q = self.target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
+            target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
+            current_q[torch.arange(self.batch_size), action_pt] = target_q
+        self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+
+    def update_values(self):
+        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        self.target_network.soft_update(self.online_network)

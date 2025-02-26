@@ -1,3 +1,4 @@
+
 import pygame
 import random
 import torch
@@ -206,7 +207,7 @@ class Game:
         self.plr = Player(self.config)
         self.apple = Apple(self.config)
         self.key_order = util.Queue()
-        self.prev_dist = 1000000
+        self.prev_dist = util.calculate_dist((self.plr.get_pixelX(0), self.plr.get_pixelY(0)), (self.apple.get_pixelX(), self.apple.get_pixelY()))
         self.prev_plr_size = 1
         self.display = 1
         self.clock = pygame.time.Clock()
@@ -231,7 +232,7 @@ class Game:
         self.plr.reset()
         self.apple.reset()
         self.prev_plr_size = 1
-        self.prev_dist = 1000000
+        self.prev_dist = util.calculate_dist((self.plr.get_pixelX(0), self.plr.get_pixelY(0)), (self.apple.get_pixelX(), self.apple.get_pixelY()))
         self.frames.clear()
         for i in range(self.frames_stack): self.frames.append(self.screenshot())
         return
