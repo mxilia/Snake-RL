@@ -49,15 +49,10 @@ class Apple:
         return self.rect.y
 
     def get_pixelX(self):
-        return int(round(self.rect.x/self.width))
+        return int(round(self.getX()/self.width))
     
     def get_pixelY(self):
-        return int(round(self.rect.y/self.height))
-    
-    def copy(self, target):
-        if(target.onScreen == False): return
-        self.rect = pygame.Rect((target.rect.x, target.rect.y, self.width, self.height))
-        return
+        return int(round(self.getY()/self.height))
 
     def generate(self, occupied):
         if(self.onScreen): return
@@ -89,7 +84,7 @@ class Apple:
 
 
 class Player:
-    speed = 20
+    speed = 4
     scale = (1, 1)
     color = (20, 190, 20)
     dir = [(0, -1), (-1, 0), (0, 1), (1, 0)]
@@ -101,8 +96,9 @@ class Player:
         self.size = 1
         self.score = 0
         self.default_key = 3
+        self.current_dir = self.default_key
         self.rect = []
-        self.rect.append([self.default_key, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
+        self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
 
     def set_config(self, config):
         self.width = self.scale[0]*config.PIXEL_SIZE
@@ -118,8 +114,9 @@ class Player:
         self.alive = True
         self.size = 1
         self.score = 0
+        self.current_dir = self.default_key
         self.rect.clear()
-        self.rect.append([self.default_key, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
+        self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
     
     def getX(self, index):
         if(index>=self.size or index<0): return None
@@ -130,29 +127,13 @@ class Player:
         return self.rect[index][1].y
 
     def get_pixelX(self, index):
-        if(index>=self.size or index<0): return None
-        return int(round(self.rect[index][1].x/self.width))
+        return int(round(self.getX(index)/self.width))
     
     def get_pixelY(self, index):
-        if(index>=self.size or index<0): return None
-        return int(round(self.rect[index][1].y/self.height))
+        return int(round(self.getY(index)/self.height))
     
     def get_body_pixel(self):
-        body = []
-        for i in range(self.size):
-            body.append((self.get_pixelX(i), self.get_pixelY(i)))
-        return body
-    
-    def get_dir(self, index):
-        if(index>=self.size or index<0): return None
-        return self.rect[index][0]
-    
-    def copy(self, target):
-        self.rect.clear()
-        for i in range(target.size):
-            self.rect.append([target.rect[i][0], target.rect[i][1].copy()])
-        self.size = target.size
-        return
+        return [(self.get_pixelX(i), self.get_pixelY(i)) for i in range(self.size)]
     
     def complete_movement(self):
         if(self.alive == False): return True
@@ -161,20 +142,24 @@ class Player:
 
     def collide(self, pixelX, pixelY):
         if(self.alive == False): return
-        if(self.collide == False): return False
+        if(self.collision == False): return False
         body = self.get_body_pixel()
-        for e in body:
+        for e in body: 
             if(e[0]==self.get_pixelX(0)+pixelX and e[1]==self.get_pixelY(0)+pixelY): return True
         return False
     
     def change_dir(self, key):
         if(self.alive == False): return
         if(not self.complete_movement()): return False
-        self.rect[0][0] = key
+        self.current_dir = key
         return True
 
     def move(self):
         if(self.alive == False): return
+        if(self.complete_movement()):
+            for i in range(self.size-1, 0, -1):
+                self.rect[i][0] = self.rect[i-1][0]
+            self.rect[0][0] = self.current_dir
         dx = self.dir[self.rect[0][0]][0]*self.speed
         dy = self.dir[self.rect[0][0]][1]*self.speed
         if(self.collision == True):
@@ -189,13 +174,11 @@ class Player:
                 if(px == x and py == y):
                     self.alive = False
                     return
+        
         for rect in self.rect:
             dx = self.dir[rect[0]][0]*self.speed
             dy = self.dir[rect[0]][1]*self.speed
             rect[1].move_ip(dx, dy)
-        if(self.complete_movement()):
-            for i in range(self.size-1, 0, -1):
-                self.rect[i][0] = self.rect[i-1][0]
         return
     
     def grow(self, eaten):
@@ -283,9 +266,12 @@ class Game:
     
     def screenshot(self):
         grey_scale_grid = torch.zeros((self.SCR_HEIGHT_PIXEL, self.SCR_WIDTH_PIXEL))
+        if(self.plr.alive == False): return grey_scale_grid
         snake_body = self.plr.get_body_pixel()
         apple_body = (self.apple.get_pixelX(), self.apple.get_pixelY())
-        for j, i in snake_body: grey_scale_grid[i, j] = 0.299*self.plr.color[0]+0.587*self.plr.color[1]+0.114*self.plr.color[2]
+        for j, i in snake_body:
+            if(j<0 or j>=self.SCR_WIDTH_PIXEL or i<0 or i>=self.SCR_HEIGHT_PIXEL): continue
+            grey_scale_grid[i, j] = 0.299*self.plr.color[0]+0.587*self.plr.color[1]+0.114*self.plr.color[2]
         grey_scale_grid[apple_body[1], apple_body[0]] = 0.299*self.apple.color[0]+0.587*self.apple.color[1]+0.114*self.apple.color[2]
         return grey_scale_grid
 
@@ -323,39 +309,4 @@ class Game:
         if(self.display == 1):
             self.apple.draw(self.screen)
             self.plr.draw(self.screen)
-        elif(self.display == 2):
-            state = self.get_state()
-            for i in range(1, self.SCR_HEIGHT_PIXEL+1):
-                for j in range(1, self.SCR_WIDTH_PIXEL+1):
-                    Color = None
-                    c_pix = int(state[i][j])
-                    if(c_pix == -1): Color = (255, 255, 255)
-                    elif(c_pix == -2): Color = (210, 200, 10)
-                    elif(c_pix == 1): Color = (25, 200, 10)
-                    elif(c_pix == 2): Color = (250, 20, 10)
-                    else: continue
-                    pygame.draw.rect(self.screen, Color, 
-                    pygame.Rect(((j-1)*self.PIXEL_SIZE, (i-1)*self.PIXEL_SIZE, self.PIXEL_SIZE, self.PIXEL_SIZE)))
         pygame.display.update()
-
-        '''
-        # This was used before I implemented convo nn. Not efficient.
-        def get_state(self, plr=None, apple=None):
-            if(plr == None): plr=self.plr
-            if(apple == None): apple=self.apple
-            current_body = plr.get_body_pixel()
-            current_apple = (apple.get_pixelX(), apple.get_pixelY())
-            state = [[1.0 if j == 0 or i == 0 or j == self.SCR_WIDTH_PIXEL+1 or i == self.SCR_HEIGHT_PIXEL+1 else 0.0 for j in range(self.SCR_WIDTH_PIXEL+2)] for i in range(self.SCR_HEIGHT_PIXEL+2)]
-            if(self.plr.alive == False): return state
-            offset = 1
-            state[current_apple[1]+offset][current_apple[0]+offset] = 2.0
-            head = current_body[0]
-            tail = current_body[plr.size-1]
-            if(tail[0]>=0 and tail[0]<self.SCR_WIDTH_PIXEL and tail[1]>=0 or tail[1]<self.SCR_HEIGHT_PIXEL): state[tail[1]+offset][tail[0]+offset] = -2.0
-            if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]+offset][head[0]+offset] = 1.0
-            for i in range(1, len(current_body)-1):
-                e = current_body[i]
-                if(e[0]<0 or e[0]>=self.SCR_WIDTH_PIXEL  or e[1]<0 or e[1]>=self.SCR_HEIGHT_PIXEL): continue
-                state[e[1]+offset][e[0]+offset] = -1.0
-            return state
-        '''
