@@ -1,7 +1,7 @@
 import pygame
 import torch
 from environment import Game
-from agent import DuelingDoubleDQN as Agent
+from agent import DoubleDQN as Agent
 
 pygame.init()
 
@@ -12,7 +12,7 @@ output_dim = env.OUTPUT_SHAPE
 
 agent = Agent(input_dim, output_dim)
 
-agent.get_model("snake_ep_70000", False)
+agent.get_model("snake_ep_90000", False)
 agent.epsilon = 0.0
 state = torch.tensor(env.get_state()).reshape(input_dim)
 

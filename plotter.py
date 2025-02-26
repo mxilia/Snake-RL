@@ -5,7 +5,7 @@ model_directory = "./double_dueling_dqn"
 reward_file = f"{model_directory}/reward_hist.txt"
 reward = list(np.loadtxt(reward_file, delimiter=" ", dtype=float))
 list_plot = []
-mode="raw"
+mode="mean"
 
 if(mode=="mean"):
     sum = 0.0

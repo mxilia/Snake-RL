@@ -19,10 +19,10 @@ class DQN:
 
         self.epsilon = 1.0
         self.epsilon_decay = 0.999999
-        self.epsilon_min = 0.1
+        self.epsilon_min = 0.02
 
-        self.discount = 0.95
-        self.learning_rate = 0.001
+        self.discount = 0.99
+        self.learning_rate = 0.0002
 
         self.batch_size = 64
         self.memory_size = 200000
@@ -52,7 +52,7 @@ class DQN:
     
     def save_model(self, model_name):
         torch.save(self.online_network, f"{self.model_directory}/{model_name}_o.pt")
-        torch.save(self.online_network, f"{self.model_directory}/{model_name}_t.pt")
+        torch.save(self.target_network, f"{self.model_directory}/{model_name}_t.pt")
         print(f"Saved {model_name} successfully.")
         return
     
@@ -133,7 +133,7 @@ class DuelingDQN(DQN):
 
 class DuelingDoubleDQN(DQN):
      
-    def __init__(self, input_dim, output_dim, model_name="double_dueling_dqn"):
+    def __init__(self, input_dim, output_dim, model_name="double_ddqn"):
         super().__init__(input_dim, output_dim, model_name)
         self.online_network = DuelingNetWork(input_dim, output_dim)
         self.target_network = DuelingNetWork(input_dim, output_dim)
