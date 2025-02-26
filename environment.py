@@ -1,6 +1,10 @@
 import pygame
 import random
+import numpy as np
+from collections import deque
+
 import utility as util
+
 
 class Game_Config:
     SCR_ROW = 10
@@ -86,7 +90,7 @@ class Apple:
 class Player:
     speed = 4
     scale = (1, 1)
-    color = (0, 255, 0)
+    color = (20, 190, 20)
     dir = [(0, -1), (-1, 0), (0, 1), (1, 0)]
 
     def __init__(self, config):
@@ -222,6 +226,10 @@ class Game:
         self.prev_plr_size = 1
         self.display = 1
         self.clock = pygame.time.Clock()
+        self.frames_stack = 4
+        self.frames = deque([self.screenshot() for i in range(self.frames_stack)], maxlen=self.frames_stack)
+        self.INPUT_SHAPE = self.get_frames().shape
+        self.OUTPUT_SHAPE = len(self.keys)
         return
     
     def set_config(self, config):
@@ -230,8 +238,6 @@ class Game:
         self.SCR_WIDTH_PIXEL = config.SCR_HEIGHT_PIXEL
         self.SCR_HEIGHT_PIXEL = config.SCR_HEIGHT_PIXEL
         self.PIXEL_SIZE = config.PIXEL_SIZE
-        self.INPUT_SHAPE = (self.SCR_WIDTH_PIXEL+2)*(self.SCR_HEIGHT_PIXEL+2)
-        self.OUTPUT_SHAPE = len(self.keys)
 
     def set_display(self, display):
         self.display = display
@@ -242,13 +248,15 @@ class Game:
         self.apple.reset()
         self.prev_plr_size = 1
         self.prev_dist = 1000000
+        self.frames.clear()
+        for i in range(self.frames_stack): self.frames.append(self.screenshot())
         return
     
     def get_reward(self):
+        reward = 0
         plr_tuple = (self.plr.get_pixelX(0), self.plr.get_pixelY(0))
         apple_tuple = (self.apple.get_pixelX(), self.apple.get_pixelY())
         current_dist = util.calculate_dist(plr_tuple, apple_tuple)
-        reward = 0
         if(self.plr.size>self.prev_plr_size): reward+=10
         self.prev_plr_size=self.plr.size
         if(self.plr.complete_movement()): reward-=0.05
@@ -267,26 +275,16 @@ class Game:
             self.update()
             self.draw()
             if(fps>0): self.clock.tick(fps)
-        return self.get_state(), self.get_reward(), not self.plr.alive
+        return self.get_frames(), self.get_reward(), not self.plr.alive
     
-    def get_state(self, plr=None, apple=None):
-        if(plr == None): plr=self.plr
-        if(apple == None): apple=self.apple
-        current_body = plr.get_body_pixel()
-        current_apple = (apple.get_pixelX(), apple.get_pixelY())
-        state = [[1.0 if j == 0 or i == 0 or j == self.SCR_WIDTH_PIXEL+1 or i == self.SCR_HEIGHT_PIXEL+1 else 0.0 for j in range(self.SCR_WIDTH_PIXEL+2)] for i in range(self.SCR_HEIGHT_PIXEL+2)]
-        if(self.plr.alive == False): return state
-        offset = 1
-        state[current_apple[1]+offset][current_apple[0]+offset] = 2.0
-        head = current_body[0]
-        tail = current_body[plr.size-1]
-        if(tail[0]>=0 and tail[0]<self.SCR_WIDTH_PIXEL and tail[1]>=0 or tail[1]<self.SCR_HEIGHT_PIXEL): state[tail[1]+offset][tail[0]+offset] = -2.0
-        if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]+offset][head[0]+offset] = 1.0
-        for i in range(1, len(current_body)-1):
-            e = current_body[i]
-            if(e[0]<0 or e[0]>=self.SCR_WIDTH_PIXEL  or e[1]<0 or e[1]>=self.SCR_HEIGHT_PIXEL): continue
-            state[e[1]+offset][e[0]+offset] = -1.0
-        return state
+    def get_frames(self):
+        return np.array(self.frames)
+    
+    def screenshot(self):
+        surface = pygame.display.get_surface()
+        rgb_arr = pygame.surfarray.array3d(surface)
+        grey_scale_arr = np.array(0.2989*rgb_arr[:, :, 0]+0.5870*rgb_arr[:, :, 1]+0.1140*rgb_arr[:, :, 2])
+        return grey_scale_arr
 
     def check_event(self):
         for e in pygame.event.get():
@@ -309,11 +307,11 @@ class Game:
     
     def update(self):
         if(self.plr.alive == False): return
-        if(not self.key_order.empty() and self.plr.change_dir(self.key_order.front())):
-            self.key_order.pop()
+        if(not self.key_order.empty() and self.plr.change_dir(self.key_order.front())): self.key_order.pop()
         self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
         self.plr.move()
         self.apple.generate(self.plr.get_body_pixel())
+        self.frames.append(self.screenshot())
         return
     
     def draw(self):
@@ -336,4 +334,25 @@ class Game:
                     pygame.draw.rect(self.screen, Color, 
                     pygame.Rect(((j-1)*self.PIXEL_SIZE, (i-1)*self.PIXEL_SIZE, self.PIXEL_SIZE, self.PIXEL_SIZE)))
         pygame.display.update()
-        
+
+        '''
+        # This was used before I implemented convo nn. Not efficient.
+        def get_state(self, plr=None, apple=None):
+            if(plr == None): plr=self.plr
+            if(apple == None): apple=self.apple
+            current_body = plr.get_body_pixel()
+            current_apple = (apple.get_pixelX(), apple.get_pixelY())
+            state = [[1.0 if j == 0 or i == 0 or j == self.SCR_WIDTH_PIXEL+1 or i == self.SCR_HEIGHT_PIXEL+1 else 0.0 for j in range(self.SCR_WIDTH_PIXEL+2)] for i in range(self.SCR_HEIGHT_PIXEL+2)]
+            if(self.plr.alive == False): return state
+            offset = 1
+            state[current_apple[1]+offset][current_apple[0]+offset] = 2.0
+            head = current_body[0]
+            tail = current_body[plr.size-1]
+            if(tail[0]>=0 and tail[0]<self.SCR_WIDTH_PIXEL and tail[1]>=0 or tail[1]<self.SCR_HEIGHT_PIXEL): state[tail[1]+offset][tail[0]+offset] = -2.0
+            if(head[0]>=0 and head[0]<self.SCR_WIDTH_PIXEL and head[1]>=0 or head[1]<self.SCR_HEIGHT_PIXEL): state[head[1]+offset][head[0]+offset] = 1.0
+            for i in range(1, len(current_body)-1):
+                e = current_body[i]
+                if(e[0]<0 or e[0]>=self.SCR_WIDTH_PIXEL  or e[1]<0 or e[1]>=self.SCR_HEIGHT_PIXEL): continue
+                state[e[1]+offset][e[0]+offset] = -1.0
+            return state
+        '''

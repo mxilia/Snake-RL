@@ -1,19 +1,32 @@
 import torch
 import torch.nn as nn
 
-class NeuralNetWork(nn.Module):
+class ConvoNN(nn.Module):
 
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=6, stride=1, padding=1)
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=6, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=1, padding=1)
         self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
-        self.fc1 = nn.Linear(input_dim, 128)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 128)
         self.fc2 = nn.Linear(128, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(64, output_dim)
+        self.fc3 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, output_dim)
+
+    @torch.no_grad
+    def get_conv_out_dim(self, input_dim):
+        x = torch.zeros(input_dim)
+        x = torch.relu(self.conv1(x))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        return torch.flatten(x).shape[0]
 
     def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        x = torch.flatten(x)
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
@@ -36,7 +49,11 @@ class DuelingNetWork(nn.Module):
 
     def __init__(self, input_dim, output_dim):
         super().__init__()
-        self.fc1 = nn.Linear(input_dim, 128)
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=6, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=4, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, 64)
         self.fc_value = nn.Linear(64, 32)
@@ -44,7 +61,18 @@ class DuelingNetWork(nn.Module):
         self.value = nn.Linear(32, 1)
         self.advantage = nn.Linear(32, output_dim)
 
+    def get_conv_out_dim(self, input_dim):
+        x = torch.zeros(input_dim)
+        x = torch.relu(self.conv1(x))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        return torch.flatten(x).shape[0]
+
     def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = self.pool(torch.relu(self.conv2(x)))
+        x = self.pool(torch.relu(self.conv3(x)))
+        x = torch.flatten(x)
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))

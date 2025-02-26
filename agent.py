@@ -6,7 +6,7 @@ import numpy as np
 import random
 
 import utility as util 
-from neural_network import NeuralNetWork
+from neural_network import ConvoNN
 from neural_network import DuelingNetWork
 
 class DQN:
@@ -34,8 +34,8 @@ class DQN:
 
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.online_network = NeuralNetWork(input_dim, output_dim)
-        self.target_network = NeuralNetWork(input_dim, output_dim)
+        self.online_network = ConvoNN(input_dim, output_dim)
+        self.target_network = ConvoNN(input_dim, output_dim)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         self.loss_func = nn.MSELoss()
 

@@ -11,9 +11,7 @@ while(True):
     env.check_event()
     env.update()
     env.draw()
-    if(env.plr.complete_movement()):
-        total_reward+=env.get_reward()
-        print(total_reward)
+    env.get_frames()
     if(env.plr.alive == False): break
-    clock.tick(20)
+    clock.tick(60)
 pygame.quit()
