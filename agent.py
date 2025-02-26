@@ -24,8 +24,8 @@ class DQN:
         self.discount = 0.99
         self.learning_rate = 0.0002
 
-        self.batch_size = 64
-        self.memory_size = 200000
+        self.batch_size = 16
+        self.memory_size = 100000
         self.target_net_update_int = 500
         self.time = 0
 
@@ -42,12 +42,9 @@ class DQN:
     def get_model(self, model_name, train):
         self.online_network = torch.load(f"{self.model_directory}/{model_name}_o.pt", weights_only=False)
         self.target_network = torch.load(f"{self.model_directory}/{model_name}_t.pt", weights_only=False)
-        if(train):
-            self.online_network.train()
-            self.target_network.train()
-        else:
-            self.online_network.eval()
-            self.target_network.eval()
+        if(train): self.online_network.train()
+        else: self.online_network.eval()
+        self.target_network.eval()
         return
     
     def save_model(self, model_name):
@@ -68,9 +65,10 @@ class DQN:
         self.memory.append([state, action, reward, next_state, done]) # s, a, r, s+1, d
         return
 
+    @torch.no_grad
     def pick_action(self, state):
         output = self.online_network(state)
-        optimal_action = torch.argmax(output).item()
+        optimal_action = torch.argmax(output[0]).item()
         random_action = int(np.random.randint(0, self.output_dim))
         action = np.random.choice([optimal_action, random_action], p=[1.0-self.epsilon, self.epsilon])
         return action

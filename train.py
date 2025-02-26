@@ -1,7 +1,7 @@
 import pygame
 import torch
 from environment import Game
-from agent import DoubleDQN as Agent
+from agent import DuelingDoubleDQN as Agent
 
 pygame.init()
 
@@ -16,7 +16,7 @@ for i in range(agent.num_episode):
     state = torch.tensor(env.get_frames()).reshape(input_dim)
     total_reward = 0
     while(True):
-        action = agent.pick_action(state)
+        action = agent.pick_action(state.unsqueeze(0))
         next_state, reward, done = env.step(action)
         next_state = torch.tensor(next_state).reshape(input_dim)
         total_reward+=reward

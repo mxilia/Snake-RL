@@ -1,5 +1,6 @@
 import pygame
 import random
+import torch
 import numpy as np
 from collections import deque
 
@@ -88,7 +89,7 @@ class Apple:
 
 
 class Player:
-    speed = 4
+    speed = 20
     scale = (1, 1)
     color = (20, 190, 20)
     dir = [(0, -1), (-1, 0), (0, 1), (1, 0)]
@@ -278,13 +279,15 @@ class Game:
         return self.get_frames(), self.get_reward(), not self.plr.alive
     
     def get_frames(self):
-        return np.array(self.frames)
+        return torch.from_numpy(np.array(self.frames))
     
     def screenshot(self):
-        surface = pygame.display.get_surface()
-        rgb_arr = pygame.surfarray.array3d(surface)
-        grey_scale_arr = np.array(0.2989*rgb_arr[:, :, 0]+0.5870*rgb_arr[:, :, 1]+0.1140*rgb_arr[:, :, 2])
-        return grey_scale_arr
+        grey_scale_grid = torch.zeros((self.SCR_HEIGHT_PIXEL, self.SCR_WIDTH_PIXEL))
+        snake_body = self.plr.get_body_pixel()
+        apple_body = (self.apple.get_pixelX(), self.apple.get_pixelY())
+        for j, i in snake_body: grey_scale_grid[i, j] = 0.299*self.plr.color[0]+0.587*self.plr.color[1]+0.114*self.plr.color[2]
+        grey_scale_grid[apple_body[1], apple_body[0]] = 0.299*self.apple.color[0]+0.587*self.apple.color[1]+0.114*self.apple.color[2]
+        return grey_scale_grid
 
     def check_event(self):
         for e in pygame.event.get():
@@ -311,7 +314,7 @@ class Game:
         self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
         self.plr.move()
         self.apple.generate(self.plr.get_body_pixel())
-        self.frames.append(self.screenshot())
+        if(self.plr.complete_movement()): self.frames.append(self.screenshot())
         return
     
     def draw(self):

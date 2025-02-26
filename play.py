@@ -13,5 +13,5 @@ while(True):
     env.draw()
     env.get_frames()
     if(env.plr.alive == False): break
-    clock.tick(60)
+    clock.tick(10)
 pygame.quit()
