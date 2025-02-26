@@ -1,4 +1,3 @@
-
 import pygame
 import random
 import torch
@@ -6,7 +5,6 @@ import numpy as np
 from collections import deque
 
 import utility as util
-
 
 class Game_Config:
     SCR_ROW = 10

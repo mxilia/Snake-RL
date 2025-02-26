@@ -40,16 +40,16 @@ class DQN:
         self.loss_func = nn.MSELoss()
 
     def get_model(self, model_name, train):
-        self.online_network = torch.load(f"{self.model_directory}/{model_name}_o.pt", weights_only=False)
-        self.target_network = torch.load(f"{self.model_directory}/{model_name}_t.pt", weights_only=False)
+        self.online_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_o.pt"))
+        self.target_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_t.pt"))
         if(train): self.online_network.train()
         else: self.online_network.eval()
         self.target_network.eval()
         return
     
     def save_model(self, model_name):
-        torch.save(self.online_network, f"{self.model_directory}/{model_name}_o.pt")
-        torch.save(self.target_network, f"{self.model_directory}/{model_name}_t.pt")
+        torch.save(self.online_network.state_dict(), f"{self.model_directory}/{model_name}_o.pt")
+        torch.save(self.target_network.state_dict(), f"{self.model_directory}/{model_name}_t.pt")
         print(f"Saved {model_name} successfully.")
         return
     
@@ -131,7 +131,7 @@ class DuelingDQN(DQN):
 
 class DuelingDoubleDQN(DQN):
      
-    def __init__(self, input_dim, output_dim, model_name="double_ddqn"):
+    def __init__(self, input_dim, output_dim, model_name="dueling_ddqn"):
         super().__init__(input_dim, output_dim, model_name)
         self.online_network = DuelingNetWork(input_dim, output_dim)
         self.target_network = DuelingNetWork(input_dim, output_dim)
