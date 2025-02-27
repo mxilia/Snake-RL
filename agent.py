@@ -18,7 +18,7 @@ class DQN:
         self.num_episode = 100000
 
         self.epsilon = 1.0
-        self.epsilon_decay = 0.999999
+        self.epsilon_decay = 0.99999
         self.epsilon_min = 0.02
 
         self.discount = 0.99

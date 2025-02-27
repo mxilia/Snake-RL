@@ -51,13 +51,11 @@ class DuelingNetWork(nn.Module):
         self.conv1 = nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
-        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 64)
-        self.fc2 = nn.Linear(64, 64)
+        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 128)
+        self.fc2 = nn.Linear(128, 64)
         self.fc3 = nn.Linear(64, 64)
-        self.fc_value = nn.Linear(64, 32)
-        self.fc_advantage = nn.Linear(64, 32)
-        self.value = nn.Linear(32, 1)
-        self.advantage = nn.Linear(32, output_dim)
+        self.value = nn.Linear(64, 1)
+        self.advantage = nn.Linear(64, output_dim)
 
     def get_conv_out_dim(self, input_dim):
         x = torch.zeros(input_dim)
@@ -74,10 +72,8 @@ class DuelingNetWork(nn.Module):
         x = torch.relu(self.fc1(x))
         x = torch.relu(self.fc2(x))
         x = torch.relu(self.fc3(x))
-        V = torch.relu(self.fc_value(x))
-        A = torch.relu(self.fc_advantage(x))
-        V = self.value(V)
-        A = self.advantage(A)
+        V = self.value(x)
+        A = self.advantage(x)
         Q = V + A - torch.mean(A, dim=-1, keepdim=True)
         return Q
     

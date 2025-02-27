@@ -268,10 +268,10 @@ class Game:
         if(self.plr.alive == False): return grey_scale_grid
         snake_body = self.plr.get_body_pixel()
         apple_body = (self.apple.get_pixelX(), self.apple.get_pixelY())
+        grey_scale_grid[apple_body[1], apple_body[0]] = 0.299*self.apple.color[0]+0.587*self.apple.color[1]+0.114*self.apple.color[2]
         for j, i in snake_body:
             if(j<0 or j>=self.SCR_WIDTH_PIXEL or i<0 or i>=self.SCR_HEIGHT_PIXEL): continue
             grey_scale_grid[i, j] = 0.299*self.plr.color[0]+0.587*self.plr.color[1]+0.114*self.plr.color[2]
-        grey_scale_grid[apple_body[1], apple_body[0]] = 0.299*self.apple.color[0]+0.587*self.apple.color[1]+0.114*self.apple.color[2]
         return grey_scale_grid
 
     def check_event(self):
