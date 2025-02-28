@@ -10,7 +10,7 @@ input_dim = env.INPUT_SHAPE
 output_dim = env.OUTPUT_SHAPE
 
 agent = Agent(input_dim, output_dim)
-checkpoint = 10000
+checkpoint = 2000
 
 for i in range(agent.num_episode):
     state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)

@@ -15,7 +15,7 @@ class DQN:
         self.model_directory = f"./{model_name}"
         util.create_directory(self.model_directory)
 
-        self.num_episode = 100000
+        self.num_episode = 20000
 
         self.epsilon = 1.0
         self.epsilon_decay = 0.99999
