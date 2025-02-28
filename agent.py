@@ -9,10 +9,12 @@ import utility as util
 from neural_network import ConvoNN
 from neural_network import DuelingNetWork
 
+checkpoint_path = "./checkpoints"
+
 class DQN:
     
     def __init__(self, input_dim, output_dim, model_name="normal_dqn"):
-        self.model_directory = f"./{model_name}"
+        self.model_directory = f"{checkpoint_path}/{model_name}"
         util.create_directory(self.model_directory)
 
         self.num_episode = 20000
