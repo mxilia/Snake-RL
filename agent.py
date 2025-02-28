@@ -16,7 +16,7 @@ class DQN:
     def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="normal_dqn"):
         self.model_directory = f"{checkpoint_path}/{"noisy_" if(noisy == True) else ""}{model_name}"
         util.create_directory(self.model_directory)
-        
+
         self.noisy = noisy
         self.soft_update = soft_update
 
@@ -102,8 +102,8 @@ class DQN:
 
 class DoubleDQN(DQN):
     
-    def __init__(self, input_dim, output_dim, noisy=False, model_name="double_dqn"):
-        super().__init__(input_dim, output_dim, noisy, model_name)
+    def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="double_dqn"):
+        super().__init__(input_dim, output_dim, noisy, soft_update, model_name)
 
     def replay(self):
         if(len(self.memory)<self.batch_size): return
@@ -123,16 +123,16 @@ class DoubleDQN(DQN):
 
 class DuelingDQN(DQN):
     
-    def __init__(self, input_dim, output_dim, noisy=False, model_name="dueling_dqn"):
-        super().__init__(input_dim, output_dim, noisy, model_name)
+    def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="dueling_dqn"):
+        super().__init__(input_dim, output_dim, noisy, soft_update, model_name)
         self.online_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.target_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
 
 class DuelingDoubleDQN(DQN):
      
-    def __init__(self, input_dim, output_dim, noisy=False, model_name="dueling_ddqn"):
-        super().__init__(input_dim, output_dim, noisy, model_name)
+    def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="dueling_ddqn"):
+        super().__init__(input_dim, output_dim, noisy, soft_update, model_name)
         self.online_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.target_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
