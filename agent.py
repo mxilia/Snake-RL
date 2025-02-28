@@ -44,6 +44,29 @@ class DQN:
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         self.loss_func = nn.MSELoss()
 
+    def set_value(self,
+        num_episode=10000,
+        epsilon = 1.0,
+        epsilon_decay = 0.99999,
+        epsilon_min = 0.02,
+        discount = 0.99,
+        learning_rate = 0.0001,
+        batch_size = 32,
+        memory_size = 200000,
+        target_net_update_int = 500
+    ):
+        self.num_episode = num_episode
+        self.epsilon = epsilon
+        self.epsilon_decay = epsilon_decay
+        self.epsilon_min = epsilon_min
+        self.discount = discount
+        self.learning_rate = learning_rate
+        self.batch_size = batch_size
+        self.memory_size = memory_size
+        self.target_net_update_int = target_net_update_int
+        self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
+        return
+
     def get_model(self, model_name, train):
         self.online_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_o.pt"))
         self.target_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_t.pt"))
