@@ -47,9 +47,7 @@ class DQN:
     def get_model(self, model_name, train):
         self.online_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_o.pt"))
         self.target_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_t.pt"))
-        if(train): self.online_network.train()
-        else: self.online_network.eval()
-        self.target_network.eval()
+        if(train == False): self.online_network.eval()
         return
     
     def save_model(self, model_name):
@@ -92,6 +90,9 @@ class DQN:
             target_q = reward_pt+self.discount*torch.max(self.target_network(next_state_pt), dim=1)[0]*(1-done_pt)
             current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+        if(self.noisy == True):
+            self.online_network.reset_noise()
+            self.target_network.reset_noise()
 
     def update_values(self):
         if(self.noisy == False): self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
@@ -120,6 +121,9 @@ class DoubleDQN(DQN):
             target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
             current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+        if(self.noisy == True):
+            self.online_network.reset_noise()
+            self.target_network.reset_noise()
 
 class DuelingDQN(DQN):
     
@@ -152,3 +156,6 @@ class DuelingDoubleDQN(DQN):
             target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
             current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
+        if(self.noisy == True):
+            self.online_network.reset_noise()
+            self.target_network.reset_noise()

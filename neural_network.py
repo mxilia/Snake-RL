@@ -45,14 +45,24 @@ class ConvoNN(nn.Module):
         optimizer.step()
         return loss.item()
     
+    @torch.no_grad
     def soft_update(self, goal_net, tau=0.005):
         for self_param, goal_param in zip(self.parameters(), goal_net.parameters()):
             self_param.data.copy_((1.0-tau)*self_param.data+tau*goal_param.data)
+    
+    def reset_noise(self):
+        if(self.noisy == False): return
+        self.fc1.reset_noise()
+        self.fc2.reset_noise()
+        self.fc3.reset_noise()
+        self.fc4.reset_noise()
+        return
 
 class DuelingNetWork(nn.Module):
 
     def __init__(self, input_dim, output_dim, noisy=False):
         super().__init__()
+        self.noisy = noisy
         self.conv1 = nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1)
         self.conv2 = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
@@ -64,6 +74,7 @@ class DuelingNetWork(nn.Module):
         self.value = self.Linear(64, 1)
         self.advantage = self.Linear(64, output_dim)
 
+    @torch.no_grad
     def get_conv_out_dim(self, input_dim):
         x = torch.zeros(input_dim)
         x = torch.relu(self.conv1(x))
@@ -92,6 +103,15 @@ class DuelingNetWork(nn.Module):
         optimizer.step()
         return loss.item()
     
+    @torch.no_grad
     def soft_update(self, goal_net, tau=0.005):
         for self_param, goal_param in zip(self.parameters(), goal_net.parameters()):
             self_param.data.copy_((1.0-tau)*self_param.data+tau*goal_param.data)
+
+    def reset_noise(self):
+        if(self.noisy == False): return
+        self.fc1.reset_noise()
+        self.fc2.reset_noise()
+        self.fc3.reset_noise()
+        self.value.reset_noise()
+        self.advantage.reset_noise()
