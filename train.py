@@ -9,7 +9,7 @@ env = Game()
 input_dim = env.INPUT_SHAPE
 output_dim = env.OUTPUT_SHAPE
 
-agent = Agent(input_dim, output_dim)
+agent = Agent(input_dim, output_dim, noisy=True)
 checkpoint = 2000
 
 for i in range(agent.num_episode):

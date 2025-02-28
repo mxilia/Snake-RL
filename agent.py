@@ -13,11 +13,14 @@ checkpoint_path = "./checkpoints"
 
 class DQN:
     
-    def __init__(self, input_dim, output_dim, model_name="normal_dqn"):
-        self.model_directory = f"{checkpoint_path}/{model_name}"
+    def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="normal_dqn"):
+        self.model_directory = f"{checkpoint_path}/{"noisy_" if(noisy == True) else ""}{model_name}"
         util.create_directory(self.model_directory)
+        
+        self.noisy = noisy
+        self.soft_update = soft_update
 
-        self.num_episode = 20000
+        self.num_episode = 10000
 
         self.epsilon = 1.0
         self.epsilon_decay = 0.99999
@@ -36,8 +39,8 @@ class DQN:
 
         self.input_dim = input_dim
         self.output_dim = output_dim
-        self.online_network = ConvoNN(input_dim, output_dim)
-        self.target_network = ConvoNN(input_dim, output_dim)
+        self.online_network = ConvoNN(input_dim, output_dim, noisy=self.noisy)
+        self.target_network = ConvoNN(input_dim, output_dim, noisy=self.noisy)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         self.loss_func = nn.MSELoss()
 
@@ -71,6 +74,7 @@ class DQN:
     def pick_action(self, state):
         output = self.online_network(state)
         optimal_action = torch.argmax(output[0]).item()
+        if(self.noisy == True): return optimal_action
         random_action = int(np.random.randint(0, self.output_dim))
         action = np.random.choice([optimal_action, random_action], p=[1.0-self.epsilon, self.epsilon])
         return action
@@ -90,14 +94,16 @@ class DQN:
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
 
     def update_values(self):
-        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
-        if(self.time == 0): self.target_network.load_state_dict(self.online_network.state_dict())
-        self.time = (self.time+1)%self.target_net_update_int
+        if(self.noisy == False): self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        if(self.soft_update): self.target_network.soft_update(self.online_network)
+        else:
+            if(self.time == 0): self.target_network.load_state_dict(self.online_network.state_dict())
+            self.time = (self.time+1)%self.target_net_update_int
 
 class DoubleDQN(DQN):
     
-    def __init__(self, input_dim, output_dim, model_name="double_dqn"):
-        super().__init__(input_dim, output_dim, model_name)
+    def __init__(self, input_dim, output_dim, noisy=False, model_name="double_dqn"):
+        super().__init__(input_dim, output_dim, noisy, model_name)
 
     def replay(self):
         if(len(self.memory)<self.batch_size): return
@@ -114,29 +120,21 @@ class DoubleDQN(DQN):
             target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
             current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
-
-    def update_values(self):
-        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
-        self.target_network.soft_update(self.online_network)
 
 class DuelingDQN(DQN):
     
-    def __init__(self, input_dim, output_dim, model_name="dueling_dqn"):
-        super().__init__(input_dim, output_dim, model_name)
-        self.online_network = DuelingNetWork(input_dim, output_dim)
-        self.target_network = DuelingNetWork(input_dim, output_dim)
+    def __init__(self, input_dim, output_dim, noisy=False, model_name="dueling_dqn"):
+        super().__init__(input_dim, output_dim, noisy, model_name)
+        self.online_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
+        self.target_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
-
-    def update_values(self):
-        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
-        self.target_network.soft_update(self.online_network)
 
 class DuelingDoubleDQN(DQN):
      
-    def __init__(self, input_dim, output_dim, model_name="dueling_ddqn"):
-        super().__init__(input_dim, output_dim, model_name)
-        self.online_network = DuelingNetWork(input_dim, output_dim)
-        self.target_network = DuelingNetWork(input_dim, output_dim)
+    def __init__(self, input_dim, output_dim, noisy=False, model_name="dueling_ddqn"):
+        super().__init__(input_dim, output_dim, noisy, model_name)
+        self.online_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
+        self.target_network = DuelingNetWork(input_dim, output_dim, noisy=self.noisy)
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
     
     def replay(self):
@@ -154,7 +152,3 @@ class DuelingDoubleDQN(DQN):
             target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
             current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
-
-    def update_values(self):
-        self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
-        self.target_network.soft_update(self.online_network)
