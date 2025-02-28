@@ -213,7 +213,14 @@ class Game:
         self.frames = deque([self.screenshot() for i in range(self.frames_stack)], maxlen=self.frames_stack)
         self.INPUT_SHAPE = self.get_frames().shape
         self.OUTPUT_SHAPE = len(self.keys)
+        self.set_score_text()
         return
+    
+    def set_score_text(self):
+        self.font = pygame.font.Font(None, 16)
+        self.text_content = f"Score: {self.plr.size}"
+        self.text = self.font.render(self.text_content, True, (255, 255, 255))
+        self.text_rect = self.text.get_rect(left=3, top=3)
     
     def set_config(self, config):
         self.SCR_WIDTH = config.SCR_WIDTH
@@ -233,6 +240,8 @@ class Game:
         self.prev_dist = util.calculate_dist((self.plr.get_pixelX(0), self.plr.get_pixelY(0)), (self.apple.get_pixelX(), self.apple.get_pixelY()))
         self.frames.clear()
         for i in range(self.frames_stack): self.frames.append(self.screenshot())
+        self.text_content = f"Score: {self.plr.size}"
+        self.text = self.font.render(self.text_content, True, (255, 255, 255))
         return
     
     def get_reward(self):
@@ -296,7 +305,9 @@ class Game:
     def update(self):
         if(self.plr.alive == False): return
         if(not self.key_order.empty() and self.plr.change_dir(self.key_order.front())): self.key_order.pop()
-        self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0)))
+        if(self.plr.grow(self.apple.collide(self.plr.getX(0), self.plr.getY(0))) == True): 
+            self.text_content = f"Score: {self.plr.size}"
+            self.text = self.font.render(self.text_content, True, (255, 255, 255))
         self.plr.move()
         self.apple.generate(self.plr.get_body_pixel())
         if(self.plr.complete_movement()): self.frames.append(self.screenshot())
@@ -308,4 +319,5 @@ class Game:
         if(self.display == 1):
             self.apple.draw(self.screen)
             self.plr.draw(self.screen)
+            self.screen.blit(self.text, self.text_rect)
         pygame.display.update()
