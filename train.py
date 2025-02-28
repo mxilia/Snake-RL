@@ -10,6 +10,7 @@ input_dim = env.INPUT_SHAPE
 output_dim = env.OUTPUT_SHAPE
 
 agent = Agent(input_dim, output_dim, noisy=True)
+agent.set_value(learning_rate=0.001)
 checkpoint = 2000
 
 for i in range(agent.num_episode):

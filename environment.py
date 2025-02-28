@@ -214,6 +214,7 @@ class Game:
         self.INPUT_SHAPE = self.get_frames().shape
         self.OUTPUT_SHAPE = len(self.keys)
         self.set_score_text()
+        self.pause = False
         return
     
     def set_score_text(self):
@@ -292,14 +293,19 @@ class Game:
                 current_key = -1
                 if(self.key_order.empty()): current_key = self.plr.rect[0][0]
                 else: current_key = self.key_order.rear()
-                if(e.key == pygame.K_w and current_key%2 != 0):
+                if(e.key == pygame.K_w and current_key%2 != 0 and not self.pause):
                     self.key_order.push(0)
-                if(e.key == pygame.K_a and current_key%2 != 1):
+                elif(e.key == pygame.K_a and current_key%2 != 1 and not self.pause):
                     self.key_order.push(1)
-                if(e.key == pygame.K_s and current_key%2 != 0):
+                elif(e.key == pygame.K_s and current_key%2 != 0 and not self.pause):
                     self.key_order.push(2)
-                if(e.key == pygame.K_d and current_key%2 != 1):
+                elif(e.key == pygame.K_d and current_key%2 != 1 and not self.pause):
                     self.key_order.push(3)
+                elif(e.key == pygame.K_p):
+                    if(self.pause == False):
+                        self.pause = True
+                        while(self.pause == True): self.check_event()
+                    else: self.pause = False
         return
     
     def update(self):
