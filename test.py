@@ -10,7 +10,7 @@ env = Game()
 input_dim = env.INPUT_SHAPE
 output_dim = env.OUTPUT_SHAPE
 
-agent = Agent(input_dim, output_dim)
+agent = Agent(input_dim, output_dim, noisy=True)
 
 agent.get_model("snake_ep_10000", False)
 agent.epsilon = 0.0
