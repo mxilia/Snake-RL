@@ -2,8 +2,8 @@ import pygame
 import torch
 from environment import Game
 
-from model.dqn_variant import DuelingDoubleDQN
-from model.ac_variant import A2C
+from model.dqn_variant import *
+from model.ac_variant import *
 
 pygame.init()
 
@@ -12,10 +12,12 @@ input_dim = env.INPUT_SHAPE
 output_dim = env.OUTPUT_SHAPE
 
 def train_dqn(
+    Model,
+    model_name,
     noisy=True,
     checkpoint=2000
 ):
-    agent = DuelingDoubleDQN(input_dim, output_dim, noisy=noisy)
+    agent = Model(input_dim, output_dim, noisy=noisy)
     agent.set_value(learning_rate=0.001)
 
     for i in range(agent.num_episode):

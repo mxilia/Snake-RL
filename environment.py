@@ -6,17 +6,21 @@ from collections import deque
 
 import utility as util
 
-class Game_Config:
-    SCR_ROW = 10
-    SCR_COLUMN = 10
-    PIXEL_SIZE = 20
-    SCR_WIDTH = SCR_COLUMN*PIXEL_SIZE
-    SCR_HEIGHT = SCR_ROW*PIXEL_SIZE
-    SCR_WIDTH_PIXEL = int(SCR_WIDTH/PIXEL_SIZE)
-    SCR_HEIGHT_PIXEL = int(SCR_HEIGHT/PIXEL_SIZE)
+class GameConfig:
 
-    def __init__(self):
-        pass
+    def __init__(
+        self,
+        row=10,
+        col=10,
+        pixel_size=20
+    ):
+        self.SCR_ROW = row
+        self.SCR_COLUMN = col
+        self.PIXEL_SIZE = pixel_size
+        self.SCR_WIDTH = self.SCR_COLUMN*self.PIXEL_SIZE
+        self.SCR_HEIGHT = self.SCR_ROW*self.PIXEL_SIZE
+        self.SCR_WIDTH_PIXEL = int(self.SCR_WIDTH/self.PIXEL_SIZE)
+        self.SCR_HEIGHT_PIXEL = int(self.SCR_HEIGHT/self.PIXEL_SIZE)
 
 class Apple:
     scale = (1, 1)
@@ -198,12 +202,11 @@ class Game:
     key_D = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_d)
     keys = [key_W, key_A, key_S, key_D]
     
-    def __init__(self):
-        self.config = Game_Config()
-        self.set_config(self.config)
+    def __init__(self, config):
+        self.set_config(config)
         self.screen = pygame.display.set_mode((self.SCR_WIDTH, self.SCR_HEIGHT))
-        self.plr = Player(self.config)
-        self.apple = Apple(self.config)
+        self.plr = Player(config)
+        self.apple = Apple(config)
         self.key_order = util.Queue()
         self.prev_dist = util.calculate_dist((self.plr.get_pixelX(0), self.plr.get_pixelY(0)), (self.apple.get_pixelX(), self.apple.get_pixelY()))
         self.prev_plr_size = 1

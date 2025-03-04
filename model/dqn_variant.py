@@ -11,7 +11,8 @@ from model.neural_network import *
 class DQN:
     
     def __init__(self, input_dim, output_dim, noisy=False, soft_update=True, model_name="normal_dqn"):
-        self.model_directory = f"{checkpoint_path}/{"noisy_" if(noisy == True) else ""}{model_name}"
+        self.model_name = model_name
+        self.model_directory = f"{checkpoint_path}/{model_name}"
         util.create_directory(self.model_directory)
 
         self.noisy = noisy
@@ -64,16 +65,16 @@ class DQN:
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         return
 
-    def get_model(self, model_name, train):
-        self.online_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_o.pt"))
-        self.target_network.load_state_dict(torch.load(f"{self.model_directory}/{model_name}_t.pt"))
+    def get_model(self, episode, train):
+        self.online_network.load_state_dict(torch.load(f"{self.model_directory}/ep_{episode}_o.pt"))
+        self.target_network.load_state_dict(torch.load(f"{self.model_directory}/ep_{episode}_t.pt"))
         if(train == False): self.online_network.eval()
         return
     
-    def save_model(self, model_name):
-        torch.save(self.online_network.state_dict(), f"{self.model_directory}/{model_name}_o.pt")
-        torch.save(self.target_network.state_dict(), f"{self.model_directory}/{model_name}_t.pt")
-        print(f"Saved {model_name} successfully.")
+    def save_model(self, episode):
+        torch.save(self.online_network.state_dict(), f"{self.model_directory}/ep_{episode}_o.pt")
+        torch.save(self.target_network.state_dict(), f"{self.model_directory}/ep_{episode}_t.pt")
+        print(f"Saved {self.model_name} (ep_{episode}) successfully.")
         return
     
     def save_reward(self):

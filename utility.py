@@ -47,7 +47,11 @@ def create_directory(directory_name):
         os.mkdir(directory_name)
         print(f"Create {directory_name} successfully.")
     except FileExistsError:
-        print(f"{directory_name} existed.")
+        print(f"{directory_name} existed.\nAre you sure you want to Replace it? y/n")
+        while(True):
+            c = input()
+            if(c=='n'): exit(0)
+            elif(c=='y'): break
         return
     except PermissionError:
         print(f"Creating {directory_name} denied.")
