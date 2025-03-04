@@ -10,7 +10,7 @@ def get_avg(array):
     return avg_list
 
 checkpoint_path = "./checkpoints"
-model_directory = f"{checkpoint_path}/noisy_dueling_ddqn"
+model_directory = f"{checkpoint_path}/a2c"
 reward_file = f"{model_directory}/reward_hist.txt"
 reward = list(np.loadtxt(reward_file, delimiter=" ", dtype=float))
 fig, axes = plt.subplots(1, 2, figsize=(10,4), dpi=100)
