@@ -2,8 +2,8 @@ import pygame
 import torch
 from environment import Game
 
-from agent import DuelingDoubleDQN
-from agent import A2C
+from model.dqn_variant import DuelingDoubleDQN
+from model.ac_variant import A2C
 
 pygame.init()
 

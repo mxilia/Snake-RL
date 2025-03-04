@@ -1,7 +1,7 @@
 import pygame
 import torch
 from environment import Game
-from agent import DuelingDoubleDQN as Agent
+from model.dqn_variant import DuelingDoubleDQN as Agent
 
 pygame.init()
 
