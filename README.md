@@ -1,2 +1,2 @@
-# Deep Q-Learning Snake
+# Snake-RL
 not finished yet

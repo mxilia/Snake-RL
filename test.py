@@ -1,25 +1,25 @@
-import pygame
 import torch
-from environment import Game
-from model.dqn_variant import DuelingDoubleDQN as Agent
 
-pygame.init()
+def test_a2c(agent, env):
+    input_dim = env.INPUT_SHAPE
+    state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)
+    while(True):
+        action_probability, value = agent.act(state.unsqueeze(0))
+        action_distribution = torch.distributions.Categorical(action_probability)
+        action = action_distribution.sample()
+        next_state, reward, done = env.step(action, fps=60)
+        next_state = torch.tensor(next_state.clone().detach()).reshape(input_dim)
+        state = next_state
+        if(done == True): break
+    return
 
-clock = pygame.time.Clock()
-env = Game()
-input_dim = env.INPUT_SHAPE
-output_dim = env.OUTPUT_SHAPE
-
-agent = Agent(input_dim, output_dim, noisy=True)
-
-agent.get_model("snake_ep_10000", False)
-agent.epsilon = 0.0
-state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)
-
-while(True):
-    action = agent.pick_action(state.unsqueeze(0))
-    next_state, total_reward, done = env.step(action, fps=60)
-    next_state = torch.tensor(next_state.clone().detach()).reshape(input_dim)
-    state = next_state
-    if(done == True): break
-pygame.quit()
+def test_dqn(agent, env):
+    input_dim = env.INPUT_SHAPE
+    state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)
+    while(True):
+        action = agent.pick_action(state.unsqueeze(0))
+        next_state, reward, done = env.step(action, fps=60)
+        next_state = torch.tensor(next_state.clone().detach()).reshape(input_dim)
+        state = next_state
+        if(done == True): break
+    return

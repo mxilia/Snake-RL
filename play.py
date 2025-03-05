@@ -1,13 +1,8 @@
 import pygame
-from environment import Game
-
-pygame.init()
 
 clock = pygame.time.Clock()
-env = Game()
-total_reward = 0
 
-def play():
+def play(env):
     while(True):
         env.check_event()
         env.update()

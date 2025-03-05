@@ -4,7 +4,84 @@ import torch.optim as optim
 import numpy as np
 
 import utility as util
-from model.neural_network import *
+
+checkpoint_path = "./checkpoints"
+
+class Actor(nn.Module):
+
+    def __init__(self, input_dim, output_dim):
+        super().__init__()
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, output_dim)
+
+    @torch.no_grad
+    def get_conv_out_dim(self, input_dim):
+        x = torch.zeros(input_dim)
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
+        x = torch.relu(self.conv3(x))
+        return torch.flatten(x).shape[0]
+
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
+        x = torch.relu(self.conv3(x))
+        x = x.view(x.size(0), -1)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = torch.softmax(self.fc4(x), dim=-1)
+        return x
+    
+    def fit(self, log_prob, advantage, optimizer):
+        optimizer.zero_grad()
+        loss = -(log_prob*advantage).mean()
+        loss.backward()
+        optimizer.step()
+        return loss.item()
+    
+class Critic(nn.Module):
+
+    def __init__(self, input_dim):
+        super().__init__()
+        self.conv1 = nn.Conv2d(4, 32, kernel_size=3, stride=1, padding=1)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3, stride=1, padding=1)
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.fc1 = nn.Linear(self.get_conv_out_dim(input_dim), 128)
+        self.fc2 = nn.Linear(128, 128)
+        self.fc3 = nn.Linear(128, 128)
+        self.fc4 = nn.Linear(128, 1)
+
+    @torch.no_grad
+    def get_conv_out_dim(self, input_dim):
+        x = torch.zeros(input_dim)
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
+        x = torch.relu(self.conv3(x))
+        return torch.flatten(x).shape[0]
+
+    def forward(self, x):
+        x = torch.relu(self.conv1(x))
+        x = torch.relu(self.conv2(x))
+        x = torch.relu(self.conv3(x))
+        x = x.view(x.size(0), -1)
+        x = torch.relu(self.fc1(x))
+        x = torch.relu(self.fc2(x))
+        x = torch.relu(self.fc3(x))
+        x = self.fc4(x)
+        return x
+    
+    def fit(self, value, returns, loss_func, optimizer):
+        optimizer.zero_grad()
+        loss = loss_func(value, returns)
+        loss.backward()
+        optimizer.step()
+        return loss.item()
 
 class A2C:
 
@@ -28,6 +105,20 @@ class A2C:
         self.optimizer_a = optim.Adam(self.actor_network.parameters(), lr=self.lr_a)
         self.optimizer_c = optim.Adam(self.critic_network.parameters(), lr=self.lr_c)
         self.loss_func_c = nn.MSELoss()
+
+    def set_value(self,
+        num_episode = 100000,
+        discount = 0.99,
+        lr_a = 0.00002,
+        lr_c = 0.00002
+    ):
+        self.num_episode = num_episode
+        self.discount = discount
+        self.lr_a = lr_a
+        self.lr_c = lr_c
+        self.optimizer_a = optim.Adam(self.actor_network.parameters(), lr=self.lr_a)
+        self.optimizer_c = optim.Adam(self.critic_network.parameters(), lr=self.lr_c)
+        return
 
     def get_model(self, episode, train):
         self.actor_network.load_state_dict(torch.load(f"{self.model_directory}/ep_{episode}_a.pt"))

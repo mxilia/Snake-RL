@@ -1,24 +1,7 @@
-import pygame
 import torch
-from environment import Game
 
-from model.dqn_variant import *
-from model.ac_variant import *
-
-pygame.init()
-
-env = Game()
-input_dim = env.INPUT_SHAPE
-output_dim = env.OUTPUT_SHAPE
-
-def train_dqn(
-    Model,
-    model_name,
-    noisy=True,
-    checkpoint=2000
-):
-    agent = Model(input_dim, output_dim, noisy=noisy)
-    agent.set_value(learning_rate=0.001)
+def train_dqn(agent, env, checkpoint=2000):
+    input_dim = env.INPUT_SHAPE
 
     for i in range(agent.num_episode):
         state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)
@@ -45,8 +28,8 @@ def train_dqn(
             agent.save_reward()
 
 
-def train_a2c(checkpoint=2000):
-    agent = A2C(input_dim, output_dim)
+def train_a2c(agent, env, checkpoint=2000):
+    input_dim = env.INPUT_SHAPE
 
     for i in range(agent.num_episode):
         state = torch.tensor(env.get_frames().clone().detach()).reshape(input_dim)
