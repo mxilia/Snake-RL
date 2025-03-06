@@ -1,4 +1,5 @@
 import torch
+import pygame
 
 def test_a2c(agent, env):
     input_dim = env.INPUT_SHAPE

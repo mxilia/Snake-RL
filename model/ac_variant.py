@@ -121,8 +121,8 @@ class A2C:
         return
 
     def get_model(self, episode, train):
-        self.actor_network.load_state_dict(torch.load(f"{self.model_directory}/ep_{episode}_a.pt"))
-        self.critic_network.load_state_dict(torch.load(f"{self.model_directory}/ep_{episode}_c.pt"))
+        self.actor_network.load_state_dict(torch.load(f"{self.model_directory}/{episode}_a.pt"))
+        self.critic_network.load_state_dict(torch.load(f"{self.model_directory}/{episode}_c.pt"))
         if(train == False): 
             self.actor_network.eval()
             self.critic_network.eval()
@@ -131,7 +131,7 @@ class A2C:
     def save_model(self, episode):
         torch.save(self.actor_network.state_dict(), f"{self.model_directory}/ep_{episode}_a.pt")
         torch.save(self.critic_network.state_dict(), f"{self.model_directory}/ep_{episode}_c.pt")
-        print(f"Saved {self.model_name} (ep_{episode}) successfully.")
+        print(f"Saved {self.model_name} ({episode}) successfully.")
         return
 
     def save_reward(self):

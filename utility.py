@@ -47,7 +47,7 @@ def create_directory(directory_name):
         os.mkdir(directory_name)
         print(f"Create {directory_name} successfully.")
     except FileExistsError:
-        print(f"{directory_name} existed.\nAre you sure you want to use the same name? (If you're testing then just pick y)\n y/n")
+        print(f"{directory_name} existed.\nAre you sure you want to use the same name? (If you're testing then just pick y)\ny/n")
         while(True):
             c = input()
             if(c=='n'): exit(0)
