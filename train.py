@@ -12,7 +12,7 @@ def train_dqn(agent, env, checkpoint=2000):
             next_state = torch.tensor(next_state.clone().detach()).reshape(input_dim)
             total_reward+=reward
 
-            agent.add_memory(state, action, total_reward, next_state, done)
+            agent.remember(state, action, total_reward, next_state, done)
             agent.replay()
             agent.update_values()
 

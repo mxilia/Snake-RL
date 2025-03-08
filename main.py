@@ -1,4 +1,5 @@
 import sys
+import shlex
 import pygame
 import inspect
 import argparse
@@ -7,8 +8,8 @@ import test
 import train
 import play as Game
 import environment as Env
-from model.ac_variant import *
-from model.dqn_variant import *
+from algorithm.ac_variant import *
+from algorithm.dqn_variant import *
 
 checkpoint_path = "./checkpoints"
 
@@ -106,6 +107,7 @@ env_pixel_size = args.env_pixel_size
 
 if __name__ == "__main__":
     pygame.init()
+    pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_p))
     env_config = Env.GameConfig(env_col, env_row, env_pixel_size)
     env = Env.Game(env_config)
     input_dim = env.INPUT_SHAPE
@@ -123,18 +125,21 @@ if __name__ == "__main__":
         agent = models[model_type][0](input_dim, output_dim, noisy=noisy, dueling=dueling, soft_update=bool(update_type), model_name=model_name)
         agent.set_value(num_episode, epsilon, epsilon_decay, epsilon_min, discount, learning_rate, batch_size, memory_size, target_net_update_int, tau)
     
-    if(option == 1): 
+    if(option == 1):
+        args_dir = f"{agent.get_directory()}/args.txt"
+        with open(args_dir, "w") as f: f.write("python " + " ".join(shlex.quote(arg) for arg in sys.argv))
         if(models[model_type][1] == 0): train.train_a2c(agent, env)
         else: train.train_dqn(agent, env)
     else:
         print("Pick the episode you want to test.")
-        agent.get_model(f"snake_ep_{input()}", False)
+        agent.get_model(f"snake_ep_{num_episode}", False)
         agent.epsilon = 0
         if(models[model_type][1] == 0): test.test_a2c(agent, env)
         else: test.test_dqn(agent, env)
     pygame.quit()
 
-# python main.py -option 1 -modelType a2c -modelName a2c -lr_a 0.000008 -lr_c 0.000008 -episode 50000 
-# python main.py -option 1 -modelType duelingdoubledqn -noisy -modelName noisy_dueling_ddqn -lr 0.00001 -episode 10000
-# python main.py -option 1 -modelType doubledqn -dueling -modelName dueling_ddqn_2 -lr 0.00005 -episode 10000
+# python main.py -option 1 -modelType doubledqn -dueling -noisy -modelName noisy_dueling_ddqn -episode 10000
+# python main.py -option 1 -modelType doubledqn -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 50000 -epsilonMin 0.01 -discount 0.90
+# python main.py -option 1 -modelType doubledqn -dueling -modelName dueling_ddqn_4x4 -envCol 4 -envRow 4 -episode 10000 -epsilonDecay 0.9999 -epsilonMin 0.01 -discount 0.95
 # python main.py -option 2 -modelType doubledqn -dueling -modelName dueling_ddqn
+# python main.py -option 2 -modelType doubledqn -dueling -modelName dueling_ddqn_4x4 -envCol 4 -envRow 4 -episode 10000

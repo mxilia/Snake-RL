@@ -192,7 +192,7 @@ class DQN:
         self.tau = 0.005
         self.time = 0
 
-        self.memory = deque(maxlen=self.memory_size)
+        self.buffer = deque(maxlen=self.memory_size)
         self.reward_hist = []
 
         self.input_dim = input_dim
@@ -229,6 +229,9 @@ class DQN:
         self.tau = tau
         self.optimizer = optim.Adam(self.online_network.parameters(), lr=self.learning_rate)
         return
+    
+    def get_directory(self):
+        return self.model_directory
 
     def get_model(self, episode, train):
         self.online_network.load_state_dict(torch.load(f"{self.model_directory}/{episode}_o.pt"))
@@ -250,8 +253,8 @@ class DQN:
         self.reward_hist.append(reward)
         return
     
-    def add_memory(self, state, action, reward, next_state, done):
-        self.memory.append([state, action, reward, next_state, done]) # s, a, r, s+1, d
+    def remember(self, state, action, reward, next_state, done):
+        self.buffer.append([state, action, reward, next_state, done]) # s, a, r, s+1, d
         return
 
     @torch.no_grad
@@ -264,8 +267,8 @@ class DQN:
         return action
     
     def replay(self):
-        if(len(self.memory)<self.batch_size): return
-        batch = np.array(random.sample(self.memory, self.batch_size), dtype=object)
+        if(len(self.buffer)<self.batch_size): return
+        batch = np.array(random.sample(self.buffer, self.batch_size), dtype=object)
         state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
         action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
         reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
@@ -291,8 +294,8 @@ class DoubleDQN(DQN):
         super().__init__(input_dim, output_dim, noisy, dueling, soft_update, model_name)
 
     def replay(self):
-        if(len(self.memory)<self.batch_size): return
-        batch = np.array(random.sample(self.memory, self.batch_size), dtype=object)
+        if(len(self.buffer)<self.batch_size): return
+        batch = np.array(random.sample(self.buffer, self.batch_size), dtype=object)
         state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
         action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
         reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()

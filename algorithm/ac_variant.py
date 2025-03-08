@@ -119,6 +119,9 @@ class A2C:
         self.optimizer_a = optim.Adam(self.actor_network.parameters(), lr=self.lr_a)
         self.optimizer_c = optim.Adam(self.critic_network.parameters(), lr=self.lr_c)
         return
+    
+    def get_directory(self):
+        return self.model_directory
 
     def get_model(self, episode, train):
         self.actor_network.load_state_dict(torch.load(f"{self.model_directory}/{episode}_a.pt"))

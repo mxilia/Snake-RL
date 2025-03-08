@@ -46,15 +46,19 @@ class Apple:
         return
 
     def getX(self):
+        if(self.rect == None): return
         return self.rect.x
     
     def getY(self):
+        if(self.rect == None): return
         return self.rect.y
 
     def get_pixelX(self):
+        if(self.rect == None): return
         return int(round(self.getX()/self.width))
     
     def get_pixelY(self):
+        if(self.rect == None): return
         return int(round(self.getY()/self.height))
 
     def generate(self, occupied):
@@ -76,6 +80,7 @@ class Apple:
         self.rect = pygame.Rect((x*self.width, y*self.height, self.width, self.height))
 
     def collide(self, x, y):
+        if(self.rect == None): return
         if(self.rect.x == x and self.rect.y == y):
             self.onScreen = False
             return True
@@ -225,6 +230,8 @@ class Game:
         self.text_content = f"Score: {self.plr.size}"
         self.text = self.font.render(self.text_content, True, (255, 255, 255))
         self.text_rect = self.text.get_rect(left=3, top=3)
+        self.pause_text = self.font.render("Press \'P\' to unpause.", True, (255, 255, 255))
+        self.pause_text_rect = self.pause_text.get_rect(center=(self.SCR_WIDTH//2, self.SCR_HEIGHT//2))
     
     def set_config(self, config):
         self.SCR_WIDTH = config.SCR_WIDTH
@@ -252,7 +259,8 @@ class Game:
         reward = 0
         plr_tuple = (self.plr.get_pixelX(0), self.plr.get_pixelY(0))
         apple_tuple = (self.apple.get_pixelX(), self.apple.get_pixelY())
-        current_dist = util.calculate_dist(plr_tuple, apple_tuple)
+        if(self.apple.rect != None): current_dist = util.calculate_dist(plr_tuple, apple_tuple)
+        else: current_dist = self.prev_dist
         if(self.plr.size>self.prev_plr_size): reward+=10
         self.prev_plr_size=self.plr.size
         if(self.plr.complete_movement()): reward-=0.05
@@ -307,6 +315,7 @@ class Game:
                 elif(e.key == pygame.K_p):
                     if(self.pause == False):
                         self.pause = True
+                        self.draw()
                         while(self.pause == True): self.check_event()
                     else: self.pause = False
         return
@@ -329,4 +338,5 @@ class Game:
             self.apple.draw(self.screen)
             self.plr.draw(self.screen)
             self.screen.blit(self.text, self.text_rect)
+            if(self.pause == True): self.screen.blit(self.pause_text, self.pause_text_rect)
         pygame.display.update()
