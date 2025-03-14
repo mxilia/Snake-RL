@@ -1,0 +1,1 @@
+python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 50000 -epsilonMin 0.01 -discount 0.90

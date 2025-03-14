@@ -221,11 +221,11 @@ class Game:
         self.frames = deque([self.screenshot() for i in range(self.frames_stack)], maxlen=self.frames_stack)
         self.INPUT_SHAPE = self.get_frames().shape
         self.OUTPUT_SHAPE = len(self.keys)
-        self.set_score_text()
+        self.set_text()
         self.pause = False
         return
     
-    def set_score_text(self):
+    def set_text(self):
         self.font = pygame.font.Font(None, 16)
         self.text_content = f"Score: {self.plr.size}"
         self.text = self.font.render(self.text_content, True, (255, 255, 255))

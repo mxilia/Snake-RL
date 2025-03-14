@@ -169,13 +169,14 @@ class DuelingNetWork(nn.Module):
 
 class DQN:
     
-    def __init__(self, input_dim, output_dim, noisy=False, dueling=False, soft_update=True, model_name="normal_dqn"):
+    def __init__(self, input_dim, output_dim, soft_update=True, double=False, dueling=False, noisy=False, model_name="model"):
         self.model_name = model_name
         self.model_directory = f"{checkpoint_path}/{model_name}"
         util.create_directory(self.model_directory)
-
-        self.noisy = noisy
+        
         self.soft_update = soft_update
+        self.double = double
+        self.noisy = noisy
 
         self.num_episode = 10000
 
@@ -194,6 +195,7 @@ class DQN:
 
         self.buffer = deque(maxlen=self.memory_size)
         self.reward_hist = []
+        self.score_hist = []
 
         self.input_dim = input_dim
         self.output_dim = output_dim
@@ -253,6 +255,14 @@ class DQN:
         self.reward_hist.append(reward)
         return
     
+    def save_score(self):
+        np.savetxt(f"{self.model_directory}/score_hist.txt", np.array(self.score_hist), fmt="%s", delimiter=' ')
+        return
+    
+    def add_score(self, score):
+        self.score_hist.append(score)
+        return
+    
     def remember(self, state, action, reward, next_state, done):
         self.buffer.append([state, action, reward, next_state, done]) # s, a, r, s+1, d
         return
@@ -274,10 +284,18 @@ class DQN:
         reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
         next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
         done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
-        with torch.no_grad():
-            current_q = self.target_network(state_pt)
-            target_q = reward_pt+self.discount*torch.max(self.target_network(next_state_pt), dim=1)[0]*(1-done_pt)
-            current_q[torch.arange(self.batch_size), action_pt] = target_q
+        if(self.double == True):
+            with torch.no_grad():
+                next_state_best_action = torch.argmax(self.online_network(next_state_pt), dim=1, keepdim=True)
+                current_q = self.target_network(state_pt)
+                next_best_target_q = self.target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
+                target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
+                current_q[torch.arange(self.batch_size), action_pt] = target_q
+        else:
+            with torch.no_grad():
+                current_q = self.target_network(state_pt)
+                target_q = reward_pt+self.discount*torch.max(self.target_network(next_state_pt), dim=1)[0]*(1-done_pt)
+                current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
         if(self.noisy == True): self.online_network.reset_noise()
 
@@ -287,25 +305,3 @@ class DQN:
         else:
             if(self.time == 0): self.target_network.load_state_dict(self.online_network.state_dict())
             self.time = (self.time+1)%self.target_net_update_int
-
-class DoubleDQN(DQN):
-    
-    def __init__(self, input_dim, output_dim, noisy=False, dueling=False, soft_update=True, model_name="double_dqn"):
-        super().__init__(input_dim, output_dim, noisy, dueling, soft_update, model_name)
-
-    def replay(self):
-        if(len(self.buffer)<self.batch_size): return
-        batch = np.array(random.sample(self.buffer, self.batch_size), dtype=object)
-        state_pt = torch.from_numpy(np.stack(batch[:, 0])).float()
-        action_pt = torch.from_numpy(np.stack(batch[:, 1])).long()
-        reward_pt = torch.from_numpy(np.stack(batch[:, 2])).float()
-        next_state_pt = torch.from_numpy(np.stack(batch[:, 3])).float()
-        done_pt = torch.from_numpy(np.stack(batch[:, 4])).long()
-        with torch.no_grad():
-            next_state_best_action = torch.argmax(self.online_network(next_state_pt), dim=1, keepdim=True)
-            current_q = self.target_network(state_pt)
-            next_best_target_q = self.target_network(next_state_pt).gather(1, next_state_best_action).squeeze(1)
-            target_q = reward_pt+self.discount*next_best_target_q*(1-done_pt)
-            current_q[torch.arange(self.batch_size), action_pt] = target_q
-        self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
-        if(self.noisy == True): self.online_network.reset_noise()

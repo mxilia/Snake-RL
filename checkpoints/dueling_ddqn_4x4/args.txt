@@ -1,1 +1,0 @@
-python main.py -option 1 -modelType doubledqn -dueling -modelName dueling_ddqn_4x4 -envCol 4 -envRow 4 -episode 10000 -epsilonDecay 0.9999 -epsilonMin 0.01 -discount 0.95
