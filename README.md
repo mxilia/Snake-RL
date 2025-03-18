@@ -40,10 +40,12 @@ To add optimization, use the following arguments:
         <th>Store true</th>
     </tr>
 </table>
+
 For example, if you want to make a Double Dueling DQN, you run:
 ```
 python main.py -option 1 -modelName <Name> -dueling -double
 ```
+
 To adjust the hyperparameters, use the following arguments:
 <table>
     <tr>
@@ -142,10 +144,12 @@ To adjust the hyperparameters, use the following arguments:
         <th>0.005</th>
     </tr>
 </table>
+
 For example:
 ```
 python main.py -option 1 -modelName <Name> -dueling -epsilonMin 0.01 -tau 0.0001 -discount 0.90
 ```
+
 To adjust the environment, use the following arguments:
 <table>
     <tr>
@@ -179,6 +183,7 @@ To adjust the environment, use the following arguments:
         <th>20</th>
     </tr>
 </table>
+
 To change the environment, you just add these arguments into your command line:
 ```
 python main.py -option 1 -modelName <Name> -dueling -envCol 5 -envRow 10
