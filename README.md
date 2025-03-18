@@ -128,10 +128,10 @@ To adjust the hyperparameters, use the following arguments:
         <td>200000</td>
     </tr>
     <tr>
-        <td>-targetUpdate</td>
+        <td>-targetInt</td>
         <td>
             the number of episode in between before copying online network params into target network params. (For -updateType 0)<br>
-            Example: -targetUpdate 1000
+            Example: -targetInt 1000
         </td>
         <td>500</td>
     </tr>
@@ -213,7 +213,7 @@ Here're the other useful arguments:
             2: If you want to test the model.<br>
             3: if you want to plot the model's result.
         </td>
-        <td>20</td>
+        <td>None</td>
     </tr>
 </table>
 

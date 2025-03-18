@@ -55,7 +55,7 @@ parser.add_argument('-batchSize', '--batch_size', type=int, default=32,
 parser.add_argument('-memorySize', '--memory_size', type=int, default=200000,
                     help='The size of memory buffer.')
 
-parser.add_argument('-targetUpdate', '--target_net_update_int', type=int, default=500,
+parser.add_argument('-targetInt', '--target_net_update_int', type=int, default=500,
                     help='The number of episodes between each target network update. (For interval update)')
 
 parser.add_argument('-tau', '--tau', type=float, default=0.005,
@@ -126,6 +126,6 @@ if __name__ == "__main__":
 # python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
 # python main.py -option 3 -modelName dueling_ddqn_6x6
 
-# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetUpdate 1000
+# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetInt 1000
 # python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
 # python main.py -option 3 -modelName noisy_dddqn_6x6
