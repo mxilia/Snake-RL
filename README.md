@@ -253,6 +253,7 @@ python main.py -option 0
 ```
 
 ## Performance
+### Solving 6x6
 Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:<br><br>
 ![structure](assets/structure.png)
 <br><br>
@@ -275,8 +276,9 @@ Looking at the average reward plot, the curve's still curving and not stabilizin
 - Max Score: 36
 - Min Score: 2
 
-The max score is 36 meaning some of test runs have completed the game and the mean score is around 23 which is ok.<br>
+The max score is 36 meaning some of test runs have completed the game and mean score is around 23 which is ok.
 
+### Solving 10x10
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
 - [pytorch implementation](https://github.com/KimNattanan/dqn_pong)
