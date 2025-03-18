@@ -5,14 +5,22 @@ To clone this repository, run:
 ```
 git clone https://github.com/mxilia/Snake-RL.git
 ```
+
 then:
 ```
 cd Snake-RL
 ```
+
+Download the required library by running:
+```
+pip install -r requirements.txt
+```
+
 To train a new model, run:
 ```
 python main.py -option 1 -modelName <Name>
 ```
+
 To add optimization, use the following arguments:
 <table>
     <tr>
@@ -218,7 +226,7 @@ Here're the other useful arguments:
 
 After training, to test the model, run:
 ```
-python main.py -option 2 -modelName <Name> <Also specify the optimization you added.> -episode <TheVersionYouWantToTest>
+python main.py -option 2 -modelName <Name> (SpecifyOptimizations) -episode <Version>
 ```
 
 For example, if you trained a Dueling DQN named "bob", you want to test it when it's at episode 12000 and the environment is 7x7, run:
@@ -239,4 +247,8 @@ python main.py -option 0
 ## Performance
 todo
 ## Reference
-todo
+- [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
+- [pytorch implementation](https://github.com/KimNattanan/dqn_pong)
+- [dueling network](https://thammasorn.github.io/2020/07/18/Duel-DQN.html)
+- [noisy network](https://arxiv.org/pdf/1706.10295)
+- [double dqn](https://arxiv.org/pdf/1509.06461)
