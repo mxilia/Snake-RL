@@ -219,7 +219,8 @@ Here're the other useful arguments:
             -option 0 (If you want to play the game yourself.)<br>
             -option 1 (If you want to train the model.)<br>
             -option 2 (If you want to test the model.)<br>
-            -option 3 (if you want to plot the model's result.)
+            -option 3 (if you want to plot the model's result.)<br>
+            -option 4 (if you want to evaluate the model.)
         </td>
         <td>None</td>
     </tr>
@@ -240,13 +241,20 @@ To plot the model's result, run:
 python main.py -option 3 -modelName <Name>
 ```
 
+To evaluate the model's result, run:
+```
+python main.py -option 4 -modelName <Name> (SpecifyOptimizations) -episode <Version>
+```
+Note: The argument is the same as -option 2.
+
 To play the game yourself, run:
 ```
 python main.py -option 0
 ```
 
 ## Performance
-todo
+Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:
+![structure](assets/model_structure.png)
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
 - [pytorch implementation](https://github.com/KimNattanan/dqn_pong)

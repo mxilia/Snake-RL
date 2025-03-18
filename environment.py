@@ -197,7 +197,7 @@ class Player:
         if(not eaten): return False
         self.rect.append([self.rect[self.size-1][0], pygame.Rect((self.rect[self.size-1][1].x-self.dir[self.rect[self.size-1][0]][0]*self.width, self.rect[self.size-1][1].y-self.dir[self.rect[self.size-1][0]][1]*self.height, self.width, self.height))])
         self.size+=1
-        self.time+=self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL
+        self.time=self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL
         return True
 
     def draw(self, screen):

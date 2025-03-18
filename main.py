@@ -7,6 +7,7 @@ from test import test
 from train import train
 from play import play
 from plotter import plot
+from evaluation import evaluate
 import environment as Env
 from agent import *
 
@@ -106,7 +107,7 @@ if __name__ == "__main__":
     output_dim = env.OUTPUT_SHAPE
 
     if(option == 0): play(env), pygame.quit(), exit(0)
-    if(option != 1 and option !=2): print("Invalid Option"), exit(0)
+    if(option != 1 and option !=2 and option !=4): print("Invalid Option"), exit(0)
 
     agent = DQN(input_dim, output_dim, soft_update=bool(update_type), double=double, dueling=dueling, noisy=noisy, model_name=model_name)
     agent.set_value(num_episode, epsilon, epsilon_decay, epsilon_min, discount, learning_rate, batch_size, memory_size, target_net_update_int, tau)
@@ -119,13 +120,10 @@ if __name__ == "__main__":
     else:
         agent.get_model(f"snake_ep_{num_episode}", False)
         agent.epsilon = 0
-        test(agent, env)
-    pygame.quit()
+        if(option == 2): test(agent, env, 60)
+        else: evaluate(agent, env)
 
 # python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsMin 0.01 -discount 0.90
 # python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
 # python main.py -option 3 -modelName dueling_ddqn_6x6
-
-# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsMin 0.01 -discount 0.90 -lr 0.00005 -batchSize 64 -updateType 0 -targetInt 5000
-# python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
-# python main.py -option 3 -modelName noisy_dddqn_6x6
+# python main.py -option 4 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
