@@ -126,6 +126,6 @@ if __name__ == "__main__":
 # python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
 # python main.py -option 3 -modelName dueling_ddqn_6x6
 
-# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetInt 1000
+# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsMin 0.01 -discount 0.90 -lr 0.00005 -batchSize 64 -updateType 0 -targetInt 5000
 # python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
 # python main.py -option 3 -modelName noisy_dddqn_6x6

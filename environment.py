@@ -283,7 +283,7 @@ class Game:
             self.update()
             self.draw()
             if(fps>0): self.clock.tick(fps)
-        return self.get_frames(), self.get_reward(), not self.plr.alive, bool(self.plr.time)
+        return self.get_frames(), self.get_reward(), not self.plr.alive, not bool(self.plr.time)
     
     def get_frames(self):
         return torch.from_numpy(np.array(self.frames))
