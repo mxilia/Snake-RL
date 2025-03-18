@@ -56,19 +56,15 @@ To adjust the hyperparameters, use the following arguments:
     <tr>
         <th>-updateType</th>
         <th>
-            Indicate whether the model is using interval target update or soft update<br>
-            0: Interval target update, 1: Soft update
-            Example: -updateType 0
+        Indicate whether the model is using interval target update or soft update<br>
+        0: Interval target update, 1: Soft update<br>
+        Example: -updateType 0
         </th>
         <th>1</th>
     </tr>
     <tr>
         <th>-episode</th>
-        <th>
-            Has 2 purposes. If you're training the model (-option 1) then this is the amount of the episodes the model'll be training for.<br>
-            If you're testing the model (-option 2) then this is the version model you're going to test.
-            Example: -episode 50000
-        </th>
+        <th>Has 2 purposes. If you're training the model (-option 1) then this is the amount of the episodes the model'll be training for.<br>If you're testing the model (-option 2) then this is the version model you're going to test.<br>Example: -episode 50000</th>
         <th>10000</th>
     </tr>
     <tr>
