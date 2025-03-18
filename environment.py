@@ -107,6 +107,7 @@ class Player:
         self.current_dir = self.default_key
         self.rect = []
         self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
+        self.time=self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL
 
     def set_config(self, config):
         self.width = self.scale[0]*config.PIXEL_SIZE
@@ -125,6 +126,7 @@ class Player:
         self.current_dir = self.default_key
         self.rect.clear()
         self.rect.append([self.current_dir, pygame.Rect((self.origin_x, self.origin_y, self.width, self.height))])
+        self.time+=self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL
     
     def getX(self, index):
         if(index>=self.size or index<0): return None
@@ -168,6 +170,7 @@ class Player:
             for i in range(self.size-1, 0, -1):
                 self.rect[i][0] = self.rect[i-1][0]
             self.rect[0][0] = self.current_dir
+            self.time-=1
         dx = self.dir[self.rect[0][0]][0]*self.speed
         dy = self.dir[self.rect[0][0]][1]*self.speed
         if(self.collision == True):
@@ -194,6 +197,7 @@ class Player:
         if(not eaten): return False
         self.rect.append([self.rect[self.size-1][0], pygame.Rect((self.rect[self.size-1][1].x-self.dir[self.rect[self.size-1][0]][0]*self.width, self.rect[self.size-1][1].y-self.dir[self.rect[self.size-1][0]][1]*self.height, self.width, self.height))])
         self.size+=1
+        self.time+=self.SCR_HEIGHT_PIXEL*self.SCR_WIDTH_PIXEL
         return True
 
     def draw(self, screen):
@@ -279,7 +283,7 @@ class Game:
             self.update()
             self.draw()
             if(fps>0): self.clock.tick(fps)
-        return self.get_frames(), self.get_reward(), not self.plr.alive
+        return self.get_frames(), self.get_reward(), not self.plr.alive, bool(self.plr.time)
     
     def get_frames(self):
         return torch.from_numpy(np.array(self.frames))

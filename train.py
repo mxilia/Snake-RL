@@ -8,7 +8,8 @@ def train(agent, env, checkpoint=2000):
         total_reward = 0
         while(True):
             action = agent.pick_action(state.unsqueeze(0))
-            next_state, reward, done = env.step(action)
+            next_state, reward, done, truncated = env.step(action)
+            done = done or truncated
             next_state = torch.tensor(next_state.clone().detach()).reshape(input_dim)
             total_reward+=reward
 

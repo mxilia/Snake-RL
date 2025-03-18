@@ -16,7 +16,7 @@ parser = argparse.ArgumentParser(description="parser")
 parser.add_argument('-option', '--option', type=int, required=True,
                     help='Decides whether you\'re going to play, train or test. 0 for playing, 1 for training, 2 for testing, 3 for plotting.')
 
-parser.add_argument('-modelName', '--model_name', type=str, required=True,
+parser.add_argument('-modelName', '--model_name', type=str, default="default",
                     help='The name of your model.')
 
 parser.add_argument('-double', '--double', action="store_true", default=False,
