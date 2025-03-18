@@ -276,9 +276,7 @@ Then I test it for 500 games and this is the result:<br>
 - Average Score: 23.722
 - Max Score: 36
 - Min Score: 2
-<br>
-
-The max score is 36 meaning some of test run has completed the game and the mean score is around 23 which is not bad.<br>
+The max score is 36 meaning some of test runs have completed the game and the mean score is around 23 which is ok.<br>
 
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
