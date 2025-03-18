@@ -37,10 +37,10 @@ parser.add_argument('-episode', '--num_episode', type=int, default=10000,
 parser.add_argument('-epsilon', '--epsilon', type=float, default=1.0,
                     help='Starting value of epsilon.')
 
-parser.add_argument('-epsilonDecay', '--epsilon_decay', type=float, default=0.99999,
+parser.add_argument('-epsDecay', '--epsilon_decay', type=float, default=0.99999,
                     help='The rate of epsilon decay.')
 
-parser.add_argument('-epsilonMin', '--epsilon_min', type=float, default=0.02,
+parser.add_argument('-epsMin', '--epsilon_min', type=float, default=0.02,
                     help='The minimum value that epsilon can get.')
 
 parser.add_argument('-discount', '--discount', type=float, default=0.99,
@@ -122,10 +122,10 @@ if __name__ == "__main__":
         test(agent, env)
     pygame.quit()
 
-# python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsilonMin 0.01 -discount 0.90
+# python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsMin 0.01 -discount 0.90
 # python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
 # python main.py -option 3 -modelName dueling_ddqn_6x6
 
-# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetInt 1000
+# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetInt 1000
 # python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
 # python main.py -option 3 -modelName noisy_dddqn_6x6

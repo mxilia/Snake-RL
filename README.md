@@ -1,5 +1,6 @@
 # Snake-RL
-Deep-Q-Learning with various optimization technique implemented using pytorch to try and solve a 10x10 game of snake. The optimizations I use are Double Deep-Q-Learning, Dueling Structure and Noisy Network. In the future, I might also implement more optimizations or different reinforcement learning algorithms.
+Deep-Q-Learning with various optimization technique implemented using pytorch to try and solve a 10x10 game of snake. The optimizations I use are Double Deep-Q-Learning, Dueling Structure and Noisy Network. In the future, I might also implement more optimizations or different reinforcement learning algorithms.<br>
+For this project, I use Python 3.13.1, the game is written using Pygame, the reinforcement learning algorithm and anything related to it is implemented using pytorch, the plot is plotted using matplotlib and some calculations were done with the help of numpy.
 ## Usage
 To clone this repository, run:
 ```
@@ -88,18 +89,18 @@ To adjust the hyperparameters, use the following arguments:
         <td>1.0</td>
     </tr>
     <tr>
-        <td>-epsilonDecay</td>
+        <td>-epsDecay</td>
         <td>
             the rate of which epsilon is decaying.<br>
-            Example: -epsilonDecay 0.99
+            Example: -epsDecay 0.99
         </td>
         <td>0.99999</td>
     </tr>
     <tr>
-        <td>-epsilonMin</td>
+        <td>-epsMin</td>
         <td>
             the minimum value that epsilon can be.<br>
-            Example: -epsilonMin 0.01
+            Example: -epsMin 0.01
         </td>
         <td>0.02</td>
     </tr>
@@ -155,7 +156,7 @@ To adjust the hyperparameters, use the following arguments:
 
 For example:
 ```
-python main.py -option 1 -modelName <Name> -dueling -epsilonMin 0.01 -tau 0.0001 -discount 0.90
+python main.py -option 1 -modelName <Name> -dueling -epsMin 0.01 -tau 0.0001 -discount 0.90
 ```
 
 To adjust the environment, use the following arguments:
