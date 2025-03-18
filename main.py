@@ -5,7 +5,8 @@ import argparse
 
 from test import test
 from train import train
-import play as Game
+from play import play
+from plotter import plot
 import environment as Env
 from agent import *
 
@@ -13,9 +14,9 @@ checkpoint_path = "./checkpoints"
 parser = argparse.ArgumentParser(description="parser")
 
 parser.add_argument('-option', '--option', type=int, required=True,
-                    help='Decides whether you\'re going to play, train or test. 0 for playing, 1 for training and 2 for testing.')
+                    help='Decides whether you\'re going to play, train or test. 0 for playing, 1 for training, 2 for testing, 3 for plotting.')
 
-parser.add_argument('-modelName', '--model_name', type=str, default=None,
+parser.add_argument('-modelName', '--model_name', type=str, required=True,
                     help='The name of your model.')
 
 parser.add_argument('-double', '--double', action="store_true", default=False,
@@ -69,6 +70,9 @@ parser.add_argument('-envRow', '--env_row', type=int, default=10,
 parser.add_argument('-envPixelSize', '--env_pixel_size', type=int, default=20,
                     help='How large you want each grid to be (Unit: px)')
 
+parser.add_argument('-checkpoint', '--checkpoint', type=int, default=2000,
+                    help='Specify the amount of episodes that pass by until your model will be saved')
+
 args = parser.parse_args()
 option = args.option
 model_name = args.model_name
@@ -89,8 +93,11 @@ tau = args.tau
 env_col = args.env_col
 env_row = args.env_row
 env_pixel_size = args.env_pixel_size
+checkpoint = args.checkpoint
 
 if __name__ == "__main__":
+    if(option == 3): plot(model_name), exit(0) 
+
     pygame.init()
     pygame.event.post(pygame.event.Event(pygame.KEYDOWN, key=pygame.K_p))
     env_config = Env.GameConfig(env_col, env_row, env_pixel_size)
@@ -98,7 +105,7 @@ if __name__ == "__main__":
     input_dim = env.INPUT_SHAPE
     output_dim = env.OUTPUT_SHAPE
 
-    if(option == 0):  Game.play(env), pygame.quit(), exit(0)
+    if(option == 0): play(env), pygame.quit(), exit(0)
     if(option != 1 and option !=2): print("Invalid Option"), exit(0)
 
     agent = DQN(input_dim, output_dim, soft_update=bool(update_type), double=double, dueling=dueling, noisy=noisy, model_name=model_name)
@@ -108,15 +115,17 @@ if __name__ == "__main__":
         args_dir = f"{agent.get_directory()}/args.txt"
         with open(args_dir, "w") as f: f.write("python " + " ".join(shlex.quote(arg) for arg in sys.argv))
         print("Press \'P\' to start training.")
-        train(agent, env)
+        train(agent, env, checkpoint)
     else:
         agent.get_model(f"snake_ep_{num_episode}", False)
         agent.epsilon = 0
         test(agent, env)
     pygame.quit()
 
-# python main.py -option 1 -double -dueling -noisy -modelName noisy_dueling_ddqn_6x6 -episode 10000 -envCol 6 -envRow 6 -epsilonDecay 0.999 -epsilonMin 0.01 -discount 0.95
-# python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 50000 -epsilonMin 0.01 -discount 0.90
-# python main.py -option 1 -double -dueling -modelName dueling_ddqn_4x4 -envCol 4 -envRow 4 -episode 10000 -epsilonDecay 0.9999 -epsilonMin 0.01 -discount 0.95
-# python main.py -option 2 -double -dueling -modelName dueling_ddqn
-# python main.py -option 2 -double -dueling -modelName dueling_ddqn_4x4 -envCol 4 -envRow 4 -episode 10000
+# python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsilonMin 0.01 -discount 0.90
+# python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
+# python main.py -option 3 -modelName dueling_ddqn_6x6
+
+# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetUpdateInterval 1000
+# python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
+# python main.py -option 3 -modelName noisy_dddqn_6x6

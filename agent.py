@@ -297,10 +297,10 @@ class DQN:
                 target_q = reward_pt+self.discount*torch.max(self.target_network(next_state_pt), dim=1)[0]*(1-done_pt)
                 current_q[torch.arange(self.batch_size), action_pt] = target_q
         self.online_network.fit(state_pt, current_q, self.loss_func, self.optimizer)
-        if(self.noisy == True): self.online_network.reset_noise()
 
     def update_values(self):
-        if(self.noisy == False): self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
+        if(self.noisy == True): self.online_network.reset_noise()
+        else: self.epsilon = max(self.epsilon_min, self.epsilon*self.epsilon_decay)
         if(self.soft_update): self.target_network.soft_update(self.online_network, self.tau)
         else:
             if(self.time == 0): self.target_network.load_state_dict(self.online_network.state_dict())
