@@ -253,10 +253,29 @@ python main.py -option 0
 ```
 
 ## Performance
-Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:<br>
+Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:<br><br>
 ![structure](assets/structure.png)
-<br>
+<br><br>
 The convolutional layer takes 4 continuous frames of the game state in and then process it and send it to fully connected layer as shown in the picture then it outputs Q-Value for each action.
+The hyperparameters:
+- epsilon: 1.0
+- epsilon_decay: 0.99999
+- epsilon_min: 0.01
+- discount: 0.90
+- learning_rate: 0.0001
+- batch_size: 32
+- memory_size: 200000
+- tau: 0.005 (Soft update)
+<br>
+After training for 30000 episodes, here're the reward and score plots.<br><br>
+![6x6_plot](assets/6x6_plot.png)
+<br><br>
+Looking at the average reward plot, the curve's still curving and not stabilizing yet so there's definitely more room for the model to improve.<br>
+Then I test it for 500 games and this is the result:<br>
+- Average Score: 23.722
+- Max Score: 36
+- Min Score: 2<br>
+The max score is 36 meaning some of test run has completed the game and the mean score is around 23 which is not bad.<br>
 
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
