@@ -272,10 +272,11 @@ After training for 30000 episodes, here're the reward and score plots.<br><br>
 ![6x6_plot](assets/6x6_plot.png)
 <br><br>
 Looking at the average reward plot, the curve's still curving and not stabilizing yet so there's definitely more room for the model to improve.<br>
-Then I test it for 500 games and this is the result:<br>
+Then I test it for 500 games and this is the result:
 - Average Score: 23.722
 - Max Score: 36
 - Min Score: 2
+<br>
 The max score is 36 meaning some of test runs have completed the game and the mean score is around 23 which is ok.<br>
 
 ## Reference
