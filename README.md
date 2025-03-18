@@ -1,19 +1,19 @@
 # Snake-RL
-Deep-Q-Learning with various optimization technique implemented using pytorch to try and solve a 10x10 game of snake.
+Deep-Q-Learning witd various optimization technique implemented using pytorch to try and solve a 10x10 game of snake.
 ## Usage
-To clone this repository, run:
+To clone tdis repository, run:
 ```
-git clone https://github.com/mxilia/Snake-RL.git
+git clone https://gitdub.com/mxilia/Snake-RL.git
 ```
-Then:
+tden:
 ```
 cd Snake-RL
 ```
 To train a new model, run:
 ```
-python main.py -option 1 -modelName <Name>
+pytdon main.py -option 1 -modelName <Name>
 ```
-To add optimization, use the following arguments:
+To add optimization, use tde following arguments:
 <table>
     <tr>
         <th>Argument</th>
@@ -22,31 +22,31 @@ To add optimization, use the following arguments:
         <th>Action</th>
     </tr>
     <tr>
-        <th>-dueling</th>
-        <th>Passing this argument will make your model ultilise Dueling Structure.</th>
-        <th>False</th>
-        <th>Store true</th>
+        <td>-dueling</td>
+        <td>Passing tdis argument will make your model ultilise Dueling Structure.</td>
+        <td>False</td>
+        <td>Store true</td>
     </tr>
     <tr>
-        <th>-double</th>
-        <th>Passing this argument will make your model a Double DQN.</th>
-        <th>False</th>
-        <th>Store true</th>
+        <td>-double</td>
+        <td>Passing tdis argument will make your model a Double DQN.</td>
+        <td>False</td>
+        <td>Store true</td>
     </tr>
     <tr>
-        <th>Argument</th>
-        <th>Passing this argument makes your model ultilise Noisy Network for randomness instead of epsilon-greedy.</th>
-        <th>False</th>
-        <th>Store true</th>
+        <td>Argument</td>
+        <td>Passing tdis argument makes your model ultilise Noisy Network for randomness instead of epsilon-greedy.</td>
+        <td>False</td>
+        <td>Store true</td>
     </tr>
 </table>
 
 For example, if you want to make a Double Dueling DQN, you run:
 ```
-python main.py -option 1 -modelName <Name> -dueling -double
+pytdon main.py -option 1 -modelName <Name> -dueling -double
 ```
 
-To adjust the hyperparameters, use the following arguments:
+To adjust tde hyperparameters, use tde following arguments:
 <table>
     <tr>
         <th>Argument</th>
@@ -54,99 +54,99 @@ To adjust the hyperparameters, use the following arguments:
         <th>Default</th>
     </tr>
     <tr>
-        <th>-updateType</th>
-        <th>
-        Indicate whether the model is using interval target update or soft update<br>
+        <td>-updateType</td>
+        <td>
+        Indicate whetder tde model is using interval target update or soft update<br>
         0: Interval target update, 1: Soft update<br>
         Example: -updateType 0
-        </th>
-        <th>1</th>
+        </td>
+        <td>1</td>
     </tr>
     <tr>
-        <th>-episode</th>
-        <th>Has 2 purposes. If you're training the model (-option 1) then this is the amount of the episodes the model'll be training for.<br>If you're testing the model (-option 2) then this is the version model you're going to test.<br>Example: -episode 50000</th>
-        <th>10000</th>
+        <td>-episode</td>
+        <td>Has 2 purposes. If you're training tde model (-option 1) tden tdis is tde amount of tde episodes tde model'll be training for.<br>If you're testing tde model (-option 2) tden tdis is tde version model you're going to test.<br>Example: -episode 50000</td>
+        <td>10000</td>
     </tr>
     <tr>
-        <th>-epsilon</th>
-        <th>
-            The starting value of epsilon.
+        <td>-epsilon</td>
+        <td>
+            tde starting value of epsilon.
             Example: -epsilon 0.90
-        </th>
-        <th>1.0</th>
+        </td>
+        <td>1.0</td>
     </tr>
     <tr>
-        <th>-epsilonDecay</th>
-        <th>
-            The rate of which epsilon is decaying.
+        <td>-epsilonDecay</td>
+        <td>
+            tde rate of which epsilon is decaying.
             Example: -epsilonDecay 0.99
-        </th>
-        <th>0.99999</th>
+        </td>
+        <td>0.99999</td>
     </tr>
     <tr>
-        <th>-epsilonMin</th>
-        <th>
-            The minimum value that epsilon can be.
+        <td>-epsilonMin</td>
+        <td>
+            tde minimum value tdat epsilon can be.
             Example: -epsilonMin 0.01
-        </th>
-        <th>0.02</th>
+        </td>
+        <td>0.02</td>
     </tr>
     <tr>
-        <th>-discount</th>
-        <th>
-            The value of discount factor. The closer it is to 1, the more the model is caring about the future reward.
+        <td>-discount</td>
+        <td>
+            tde value of discount factor. tde closer it is to 1, tde more tde model is caring about tde future reward.
             Example: -discount 0.90
-        </th>
-        <th>0.99</th>
+        </td>
+        <td>0.99</td>
     </tr>
     <tr>
-        <th>-lr</th>
-        <th>
-            The value of learning rate.
+        <td>-lr</td>
+        <td>
+            tde value of learning rate.
             Example: -lr 0.01
-        </th>
-        <th>0.0001</th>
+        </td>
+        <td>0.0001</td>
     </tr>
     <tr>
-        <th>-batchSize</th>
-        <th>
-            The size of minibatch the model is sampling.
+        <td>-batchSize</td>
+        <td>
+            tde size of minibatch tde model is sampling.
             Example: -batchSize 64
-        </th>
-        <th>32</th>
+        </td>
+        <td>32</td>
     </tr>
     <tr>
-        <th>-memorySize</th>
-        <th>
-            The size of the replay buffer.
+        <td>-memorySize</td>
+        <td>
+            tde size of tde replay buffer.
             Example: -memorySize 100000
-        </th>
-        <th>200000</th>
+        </td>
+        <td>200000</td>
     </tr>
     <tr>
-        <th>-targetUpdateInterval</th>
-        <th>
-            The number of episode in between before copying online network params into target network params. (For -updateType 0)
+        <td>-targetUpdateInterval</td>
+        <td>
+            tde number of episode in between before copying online network params into target network params. (For -updateType 0)
             Example: -targetUpdateInterval 1000
-        </th>
-        <th>500</th>
+        </td>
+        <td>500</td>
     </tr>
     <tr>
-        <th>-tau</th>
-        <th>
-            The rate of soft updating. (For -updateType 1)
+        <td>-tau</td>
+        <td>
+            tde rate of soft updating. (For -updateType 1)
             Example: -tau 0.01
-        </th>
-        <th>0.005</th>
+        </td>
+        <td>0.005</td>
     </tr>
 </table>
 
 For example:
 ```
-python main.py -option 1 -modelName <Name> -dueling -epsilonMin 0.01 -tau 0.0001 -discount 0.90
+pytdon main.py -option 1 -modelName <Name> -dueling -epsilonMin 0.01 -tau 0.0001 -discount 0.90
 ```
 
-To adjust the environment, use the following arguments:
+To adjust tde environment, use tde following arguments:
 <table>
     <tr>
         <th>Argument</th>
@@ -154,35 +154,35 @@ To adjust the environment, use the following arguments:
         <th>Default</th>
     </tr>
     <tr>
-        <th>-envCol</th>
-        <th>
-            The number of columns of the snake game grid.
+        <td>-envCol</td>
+        <td>
+            tde number of columns of tde snake game grid.
             Example: -envcol 6
-        </th>
-        <th>10</th>
+        </td>
+        <td>10</td>
     </tr>
     <tr>
-        <th>-envRow</th>
-        <th>
-            The number of rows of the snake game grid.
+        <td>-envRow</td>
+        <td>
+            tde number of rows of tde snake game grid.
             Example: -envRow 6
-        </th>
-        <th>10</th>
+        </td>
+        <td>10</td>
     </tr>
     <tr>
-        <th>-envPixelSize</th>
-        <th>
-            The size of each grid in the snake game.<br>
-            Note: This is only for display and changing anything here might glitch the game.
+        <td>-envPixelSize</td>
+        <td>
+            tde size of each grid in tde snake game.<br>
+            Note: tdis is only for display and changing anytding here might glitch tde game.
             Example: -envPixelSize 40
-        </th>
-        <th>20</th>
+        </td>
+        <td>20</td>
     </tr>
 </table>
 
-To change the environment, you just add these arguments into your command line:
+To change tde environment, you just add tdese arguments into your command line:
 ```
-python main.py -option 1 -modelName <Name> -dueling -envCol 5 -envRow 10
+pytdon main.py -option 1 -modelName <Name> -dueling -envCol 5 -envRow 10
 ```
 
 ## Performance
