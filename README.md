@@ -253,8 +253,11 @@ python main.py -option 0
 ```
 
 ## Performance
-Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:
-![structure](assets/model_structure.png)
+Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:<br>
+![structure](assets/structure.png)
+<br>
+The convolutional layer takes 4 continuous frames of the game state in and then process it and send it to fully connected layer as shown in the picture then it outputs Q-Value for each action.
+
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
 - [pytorch implementation](https://github.com/KimNattanan/dqn_pong)
