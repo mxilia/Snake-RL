@@ -55,7 +55,7 @@ parser.add_argument('-batchSize', '--batch_size', type=int, default=32,
 parser.add_argument('-memorySize', '--memory_size', type=int, default=200000,
                     help='The size of memory buffer.')
 
-parser.add_argument('-targetUpdateInterval', '--target_net_update_int', type=int, default=500,
+parser.add_argument('-targetUpdate', '--target_net_update_int', type=int, default=500,
                     help='The number of episodes between each target network update. (For interval update)')
 
 parser.add_argument('-tau', '--tau', type=float, default=0.005,
@@ -67,7 +67,7 @@ parser.add_argument('-envCol', '--env_col', type=int, default=10,
 parser.add_argument('-envRow', '--env_row', type=int, default=10,
                     help='How many rows you want in your snake board.')
 
-parser.add_argument('-envPixelSize', '--env_pixel_size', type=int, default=20,
+parser.add_argument('-envPxSize', '--env_pixel_size', type=int, default=20,
                     help='How large you want each grid to be (Unit: px)')
 
 parser.add_argument('-checkpoint', '--checkpoint', type=int, default=2000,
@@ -126,6 +126,6 @@ if __name__ == "__main__":
 # python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
 # python main.py -option 3 -modelName dueling_ddqn_6x6
 
-# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetUpdateInterval 1000
+# python main.py -option 1 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000 -epsilonMin 0.01 -discount 0.90 -lr 0.00001 -batchSize 64 -updateType 0 -targetUpdate 1000
 # python main.py -option 2 -noisy -double -dueling -modelName noisy_dddqn_6x6 -envCol 6 -envRow 6 -episode 10000
 # python main.py -option 3 -modelName noisy_dddqn_6x6
