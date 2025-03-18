@@ -34,7 +34,7 @@ To add optimization, use the following arguments:
         <td>Store true</td>
     </tr>
     <tr>
-        <td>Argument</td>
+        <td>-noisy</td>
         <td>Passing this argument makes your model ultilise Noisy Network for randomness instead of epsilon-greedy.</td>
         <td>False</td>
         <td>Store true</td>
@@ -207,15 +207,34 @@ Here're the other useful arguments:
     <tr>
         <td>-option</td>
         <td>
-            Has 4 options.<br>
-            0: If you want to play the game yourself.<br>
-            1: If you want to train the model.<br>
-            2: If you want to test the model.<br>
-            3: if you want to plot the model's result.
+            -option 0 (If you want to play the game yourself.)<br>
+            -option 1 (If you want to train the model.)<br>
+            -option 2 (If you want to test the model.)<br>
+            -option 3 (if you want to plot the model's result.)
         </td>
         <td>None</td>
     </tr>
 </table>
+
+After training, to test the model, run:
+```
+python main.py -option 2 -modelName <Name> <Also specify the optimization you added.> -episode <TheVersionYouWantToTest>
+```
+
+For example, if you trained a Dueling DQN named "bob", you want to test it when it's at episode 12000 and the environment is 7x7, run:
+```
+python main.py -option 2 -modelName bob -dueling -episode 12000 -envCol 7 -envRow 7
+```
+
+To plot the model's result, run:
+```
+python main.py -option 3 -modelName <Name>
+```
+
+To play the game yourself, run:
+```
+python main.py -option 0
+```
 
 ## Performance
 todo
