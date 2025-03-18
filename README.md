@@ -1,5 +1,5 @@
 # Snake-RL
-Deep-Q-Learning with various optimization technique implemented using pytorch to try and solve a 10x10 game of snake. The optimizations I use are Double Deep-Q-Learning, Dueling Structure and Noisy Network. In the future, I might also implement more optimizations or different reinforcement learning algorithms.<br>
+Deep-Q-Learning with various optimization technique implemented using pytorch to try and solve a 10x10 game of snake. The optimizations I use are Double Deep-Q-Learning, Dueling Structure and Noisy Network. In the future, I might also implement more optimizations or different reinforcement learning algorithms.<br><br>
 For this project, I use Python 3.13.1, the game is written using Pygame, the reinforcement learning algorithm and anything related to it is implemented using pytorch, the plot is plotted using matplotlib and some calculations were done with the help of numpy.
 ## Usage
 To clone this repository, run:
@@ -129,10 +129,10 @@ To adjust the hyperparameters, use the following arguments:
         <td>32</td>
     </tr>
     <tr>
-        <td>-memorySize</td>
+        <td>-memSize</td>
         <td>
             the size of the replay buffer.<br>
-            Example: -memorySize 100000
+            Example: -memSize 100000
         </td>
         <td>200000</td>
     </tr>

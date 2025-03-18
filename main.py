@@ -52,7 +52,7 @@ parser.add_argument('-lr', '--learning_rate', type=float, default=0.0001,
 parser.add_argument('-batchSize', '--batch_size', type=int, default=32,
                     help='The size of minibatch.')
 
-parser.add_argument('-memorySize', '--memory_size', type=int, default=200000,
+parser.add_argument('-memSize', '--memory_size', type=int, default=200000,
                     help='The size of memory buffer.')
 
 parser.add_argument('-targetInt', '--target_net_update_int', type=int, default=500,
