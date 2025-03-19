@@ -123,7 +123,7 @@ if __name__ == "__main__":
         if(option == 2): test(agent, env, 60)
         else: evaluate(agent, env)
 
-# python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsMin 0.01 -discount 0.90
-# python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
-# python main.py -option 3 -modelName dueling_ddqn_6x6
-# python main.py -option 4 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
+# python main.py -option 1 -double -dueling -modelName dueling_ddqn_10x10 -episode 50000 -epsMin 0.01 -discount 0.90
+# python main.py -option 2 -double -dueling -modelName dueling_ddqn_10x10 -episode 50000
+# python main.py -option 3 -modelName dueling_ddqn_10x10
+# python main.py -option 4 -double -dueling -modelName dueling_ddqn_10x10 -episode 50000

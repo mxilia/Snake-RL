@@ -254,7 +254,7 @@ python main.py -option 0
 
 ## Performance
 ### Solving 6x6
-Before solving 10x10, I tried solving 6x6. So the model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping before learning. The model structure:<br><br>
+Before solving 10x10, I tried solving 6x6. The model I used is Convolutional Dueling Double Deep-Q-Learning. I didn't use noisy network because it keeps looping therefore takes a lot of time to learn. The model structure:<br><br>
 ![structure](assets/structure.png)
 <br><br>
 The convolutional layer takes 4 continuous frames of the game state in and then process it and send it to fully connected layer as shown in the picture then it outputs Q-Value for each action.<br>
@@ -271,14 +271,22 @@ The hyperparameters are as following:
 After training for 30000 episodes, here're the reward and score plots.<br><br>
 ![6x6_plot](assets/6x6_plot.png)
 <br><br>
-Looking at the average reward plot, the curve's still curving and not stabilizing yet so there's definitely more room for the model to improve. Then I tested it for 500 games and this is the result:
+Looking at the average reward plot, the curve's not stabilizing yet so there's definitely more room for the model to improve. Then I tested it for 500 games and this is the result:
 - Average Score: 23.722
 - Max Score: 36
 - Min Score: 2
 
-The max score is 36 meaning some of test runs have completed the game and mean score is around 23 which is ok.
+The max score is 36 meaning some of test runs have completed the game and mean score is around 23 which means the agent is performing above average which is not bad. I think If I had trained it for 20000 more episodes, it might reach the optimal minimum.<br><br>
+The arguments for this model:
+```
+python main.py -option 1 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000 -epsMin 0.01 -discount 0.90
+python main.py -option 2 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
+python main.py -option 3 -modelName dueling_ddqn_6x6
+python main.py -option 4 -double -dueling -modelName dueling_ddqn_6x6 -envCol 6 -envRow 6 -episode 30000
+```
 
 ### Solving 10x10
+From the previous experiment, I decided to keep the same model and the same hyperparameters but this time I'm training the model for 50000 episodes and here're the plots:
 ## Reference
 - [inspiration](https://github.com/benjamin-dupuis/DQN-snake/tree/master)
 - [pytorch implementation](https://github.com/KimNattanan/dqn_pong)

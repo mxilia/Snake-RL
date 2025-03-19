@@ -1,0 +1,1 @@
+python main.py -option 1 -double -dueling -modelName dueling_ddqn_10x10 -episode 50000 -epsMin 0.01 -discount 0.90
